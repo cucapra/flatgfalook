@@ -10,6 +10,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
+use flatgfa::flatgfa::FlatGFA;
+use flatgfa::parse;
+
 #[derive(Parser)]
 #[command(name = "gfalook")]
 #[command(about = "Visualize a variation graph in 1D.", long_about = None)]
@@ -6599,6 +6602,7 @@ fn main() {
     if graph.paths.is_empty() {
         eprintln!("Warning: No paths found in the GFA file.");
     }
+    
 
     // Detect output format by file extension
     let is_svg = args
