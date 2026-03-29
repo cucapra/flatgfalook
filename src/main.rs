@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 use flatgfa::{flatgfa::FlatGFA, file, memfile, parse};
 use flatgfa::parse::Parser as FlatParser;
+use flatgfa::pool::*;
 
 #[derive(Parser)]
 #[command(name = "gfalook")]
@@ -5020,6 +5021,61 @@ fn render(args: &Args, graph: &Graph) -> Vec<u8> {
     result
 }
 
+fn render_flatgfa(args: &Args, graph: &FlatGFA) -> Vec<u8> {
+
+    /* For now, ignore most options that force us to do extra processing */
+
+    /* For now, just worry about args with default values.
+    For a basic setup, rewriting functions to only account for 
+    mandatory arguments should be fine
+    */
+    /*
+    width
+    height
+    path_height
+    path_x_padding
+    cluster_gap
+    dendogram_width
+    node_width
+    x_ticks
+    annotation_bar_width
+    legend_height
+    verbose
+    */
+
+    let mut display_paths: Vec<Path> = graph.paths.all().to_vec();
+
+    let pix_per_path = args.path_height;
+    let bottom_padding = 5u32;
+
+    /* TODO: figure out what this means and how to replicate */
+    /* total length just seems to be the sum of the segment offsets
+    it's given by:
+    let mut offset = 0u64
+    for seg in &graph.segments {
+        graph.segment_offsets.push(offset);
+        offset += seg.sequence_len;
+    }
+    graph.total_length = offset;
+
+    based on this I think we can just get the length of the seq_data pool
+    */
+    let len_to_visualize = graph.seq_data.len();
+    let viz_width = args.width.min(len_to_visualize as u32);
+
+    let bin_width = args
+        .bin_width
+        .unwrap_or_else(|| len_to_visualize as f64 / viz_width as f64);
+    let _scale_x = 1.0; // In binned mode
+    let _scale_y = viz_width as f64 / len_to_visualize as f64;
+
+    
+
+    return Vec::new();
+
+}
+
+
 /// Write clustering results to a TSV file
 fn write_cluster_tsv(
     output_path: &Path,
@@ -6608,14 +6664,18 @@ fn main() {
     };
 
     // parsing as a FlatGFA
-    let fgfa = FlatParser::for_heap().parse_mem(file.as_ref());
+    let store = FlatParser::for_heap().parse_mem(file.as_ref());
+    let fgfa = store.as_ref();
+
+    // check to see if I can pass this in correctly
+    let test_parse = render_flatgfa(&args, &fgfa);
 
     if graph.paths.is_empty() {
         eprintln!("Warning: No paths found in the GFA file.");
     }
     
     // checking if FlatGFA is empty
-    if fgfa.paths.is_empty() {
+    if fgfa.paths.len() == 0 {
         eprintln!("Warning: No paths found in GFA file parsed into FlatGFA.")
     }
 
