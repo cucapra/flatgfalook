@@ -10,8 +10,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
-use flatgfa::flatgfa::FlatGFA;
-use flatgfa::parse;
+use flatgfa::{flatgfa::FlatGFA, file, memfile, parse};
+use flatgfa::parse::Parser as FlatParser;
 
 #[derive(Parser)]
 #[command(name = "gfalook")]
@@ -6599,10 +6599,25 @@ fn main() {
         }
     };
 
+    let file = match std::fs::read(&args.idx) {
+        Ok(f) => f,
+        Err(e) => {
+            eprintln!("Error loading GFA file as FlatGFA: {}", e);
+            std::process::exit(1);
+        }
+    };
+
+    // parsing as a FlatGFA
+    let fgfa = FlatParser::for_heap().parse_mem(file.as_ref());
+
     if graph.paths.is_empty() {
         eprintln!("Warning: No paths found in the GFA file.");
     }
     
+    // checking if FlatGFA is empty
+    if fgfa.paths.is_empty() {
+        eprintln!("Warning: No paths found in GFA file parsed into FlatGFA.")
+    }
 
     // Detect output format by file extension
     let is_svg = args
