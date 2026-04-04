@@ -10,8 +10,8 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
-use flatgfa::flatgfa::{HeapGFAStore, FlatGFA};
-use flatgfa::memfile;
+use bstr::{BStr, BString};
+use flatgfa::{flatgfa::{FlatGFA, HeapGFAStore}, pool::Id, memfile};
 
 #[derive(Parser)]
 #[command(name = "gfalook")]
@@ -1306,7 +1306,7 @@ fn load_path_colors(path: &PathBuf) -> std::io::Result<FxHashMap<String, (u8, u8
     Ok(colors)
 }
 
-fn load_paths_to_display(path: &PathBuf) -> std::io::Result<Vec<String>> {
+fn load_paths_to_display(path: &PathBuf) -> std::io::Result<Vec<BString>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     let mut paths = Vec::new();
@@ -1315,7 +1315,7 @@ fn load_paths_to_display(path: &PathBuf) -> std::io::Result<Vec<String>> {
         let line = line?;
         let line = line.trim();
         if !line.is_empty() {
-            paths.push(line.to_string());
+            paths.push(line.into());
         }
     }
 
@@ -3285,21 +3285,21 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     }
     // Note: compressed_mode conflicts with cluster_paths and prefix_merges are handled by clap
 
-    let mut display_paths: Vec<&GfaPath> = graph.paths.iter().collect();
+    let mut display_paths: Vec<Id<flatgfa::Path>> = (0..graph.paths.len()).map(Id::new).collect();
 
     if let Some(ref prefix) = args.ignore_prefix {
-        display_paths.retain(|p| !p.name.starts_with(prefix));
+        display_paths.retain(|p| graph.get_path_name(&graph.paths[*p]).starts_with(prefix.as_bytes()));
     }
 
     if let Some(ref ptd_file) = args.paths_to_display {
         if let Ok(ptd) = load_paths_to_display(ptd_file) {
-            let ptd_set: std::collections::HashSet<_> = ptd.iter().collect();
-            display_paths.retain(|p| ptd_set.contains(&p.name));
-            let path_map: FxHashMap<&String, &GfaPath> =
-                display_paths.iter().map(|p| (&p.name, *p)).collect();
+            let ptd_set: std::collections::HashSet<_> = ptd.iter().map(|s| s.as_ref()).collect();
+            display_paths.retain(|p| ptd_set.contains(graph.get_path_name(&graph.paths[*p])));
+            let path_map: FxHashMap<&BStr, Id<flatgfa::Path>> =
+                display_paths.iter().map(|p| (graph.get_path_name(&graph.paths[*p]), *p)).collect();
             display_paths = ptd
                 .iter()
-                .filter_map(|name| path_map.get(name).copied())
+                .filter_map(|name| path_map.get(name.as_ref()).copied())
                 .collect();
         }
     }

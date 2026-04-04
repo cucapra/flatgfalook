@@ -588,6 +588,7 @@ dependencies = [
 name = "gfalook"
 version = "0.1.0"
 dependencies = [
+ "bstr",
  "clap",
  "env_logger",
  "flatgfa",
