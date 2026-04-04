@@ -10,6 +10,9 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
+use flatgfa::flatgfa::HeapGFAStore;
+use flatgfa::memfile;
+
 #[derive(Parser)]
 #[command(name = "gfalook")]
 #[command(about = "Visualize a variation graph in 1D.", long_about = None)]
@@ -1213,182 +1216,9 @@ fn get_annotation_color(category_index: usize, total_categories: usize) -> (u8, 
 }
 
 /// Parse a GFA file efficiently
-fn parse_gfa(path: &PathBuf) -> std::io::Result<Graph> {
-    let mut graph = Graph::new();
-
-    info!("Loading GFA file...");
-
-    // First pass: collect segments
-    let file = File::open(path)?;
-    let reader = BufReader::new(file);
-    for line in reader.lines() {
-        let line = line?;
-        if line.starts_with("S\t") {
-            let parts: Vec<&str> = line.split('\t').collect();
-            if parts.len() >= 3 {
-                let name = parts[1].to_string();
-                let seq = parts[2];
-                let seq_len = seq.len() as u64;
-                // Count uncalled bases (N's)
-                let n_count = seq.bytes().filter(|&b| b == b'N' || b == b'n').count() as u64;
-                let id = graph.segments.len() as u64;
-                graph.segment_name_to_id.insert(name, id);
-                graph.segments.push(Segment {
-                    sequence_len: seq_len,
-                    n_count,
-                });
-            }
-        }
-    }
-
-    // Calculate segment offsets (linear layout)
-    let mut offset = 0u64;
-    for seg in &graph.segments {
-        graph.segment_offsets.push(offset);
-        offset += seg.sequence_len;
-    }
-    graph.total_length = offset;
-
-    info!(
-        "Found {} segments, total length: {} bp",
-        graph.segments.len(),
-        graph.total_length
-    );
-
-    // Use a set to deduplicate edges
-    let mut edge_set: std::collections::HashSet<(u64, bool, u64, bool)> =
-        std::collections::HashSet::new();
-
-    // Second pass: collect paths and edges (from L-lines)
-    let file2 = File::open(path)?;
-    let reader2 = BufReader::new(file2);
-    for line in reader2.lines() {
-        let line = line?;
-        if line.starts_with("P\t") {
-            let parts: Vec<&str> = line.split('\t').collect();
-            if parts.len() >= 3 {
-                let path_name = parts[1].to_string();
-                let segments_str = parts[2];
-                let mut steps = Vec::new();
-
-                for seg in segments_str.split(',') {
-                    let seg = seg.trim();
-                    if seg.is_empty() {
-                        continue;
-                    }
-                    let (name, is_reverse) = if let Some(stripped) = seg.strip_suffix('+') {
-                        (stripped, false)
-                    } else if let Some(stripped) = seg.strip_suffix('-') {
-                        (stripped, true)
-                    } else {
-                        (seg, false)
-                    };
-                    if let Some(&id) = graph.segment_name_to_id.get(name) {
-                        steps.push(PathStep {
-                            segment_id: id,
-                            is_reverse,
-                        });
-                    }
-                }
-
-                graph.paths.push(GfaPath {
-                    name: path_name,
-                    steps,
-                });
-            }
-        } else if line.starts_with("W\t") {
-            let parts: Vec<&str> = line.split('\t').collect();
-            if parts.len() >= 7 {
-                let sample = parts[1];
-                let hap = parts[2];
-                let seq = parts[3];
-                let walk_str = parts[6];
-
-                let path_name = format!("{}#{}#{}", sample, hap, seq);
-                let mut steps = Vec::new();
-
-                let mut chars = walk_str.chars().peekable();
-                while let Some(c) = chars.next() {
-                    if c == '>' || c == '<' {
-                        let is_reverse = c == '<';
-                        let mut seg_name = String::new();
-                        while let Some(&nc) = chars.peek() {
-                            if nc == '>' || nc == '<' {
-                                break;
-                            }
-                            seg_name.push(chars.next().unwrap());
-                        }
-                        if !seg_name.is_empty() {
-                            if let Some(&id) = graph.segment_name_to_id.get(&seg_name) {
-                                steps.push(PathStep {
-                                    segment_id: id,
-                                    is_reverse,
-                                });
-                            }
-                        }
-                    }
-                }
-
-                graph.paths.push(GfaPath {
-                    name: path_name,
-                    steps,
-                });
-            }
-        } else if line.starts_with("L\t") {
-            // Parse edge: L<TAB>from<TAB>from_orient<TAB>to<TAB>to_orient<TAB>overlap
-            let parts: Vec<&str> = line.split('\t').collect();
-            if parts.len() >= 5 {
-                let from_name = parts[1];
-                let from_orient = parts[2];
-                let to_name = parts[3];
-                let to_orient = parts[4];
-
-                if let (Some(&from_id), Some(&to_id)) = (
-                    graph.segment_name_to_id.get(from_name),
-                    graph.segment_name_to_id.get(to_name),
-                ) {
-                    let from_rev = from_orient == "-";
-                    let to_rev = to_orient == "-";
-                    edge_set.insert(edge_key(from_id, from_rev, to_id, to_rev));
-                }
-            }
-        }
-    }
-
-    // Third pass: add edges from consecutive path steps (implicit edges)
-    for path in &graph.paths {
-        for window in path.steps.windows(2) {
-            let from = &window[0];
-            let to = &window[1];
-            // Edge from end of 'from' to start of 'to'
-            // from_rev=true means we're going through from in reverse, so edge starts from beginning
-            // to_rev=true means we're entering to in reverse, so edge goes to end
-            edge_set.insert(edge_key(
-                from.segment_id,
-                from.is_reverse,
-                to.segment_id,
-                to.is_reverse,
-            ));
-        }
-    }
-
-    // Convert edge set to vector
-    for (from_id, from_rev, to_id, to_rev) in edge_set {
-        graph.edges.push(Edge {
-            from_id,
-            from_rev,
-            to_id,
-            to_rev,
-        });
-    }
-
-    info!(
-        "Found {} paths, {} edges",
-        graph.paths.len(),
-        graph.edges.len()
-    );
-
-    Ok(graph)
+fn parse_gfa(path: &PathBuf) -> std::io::Result<HeapGFAStore> {
+    let file = memfile::map_file(path.to_str().unwrap());
+    Ok(flatgfa::parse::Parser::for_heap().parse_mem(file.as_ref()))
 }
 
 /// Compute SHA256-based path color (matching odgi algorithm exactly)
