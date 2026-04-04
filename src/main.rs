@@ -1419,18 +1419,18 @@ struct BedRegion {
 /// BED regions for clustering, organized by path name
 struct ClusteringBedRegions {
     /// Map from path name to sorted, merged list of regions
-    path_regions: FxHashMap<String, Vec<BedRegion>>,
+    path_regions: FxHashMap<BString, Vec<BedRegion>>,
 }
 
 impl ClusteringBedRegions {
     /// Check if a path has any BED regions defined
-    fn has_regions(&self, path_name: &str) -> bool {
+    fn has_regions(&self, path_name: &BStr) -> bool {
         self.path_regions.contains_key(path_name)
     }
 
     /// Compute the bp overlap between a segment at [seg_start, seg_end) in path coordinates
     /// and the BED regions for that path. Returns 0 if path has no regions.
-    fn compute_overlap(&self, path_name: &str, seg_start: u64, seg_end: u64) -> u64 {
+    fn compute_overlap(&self, path_name: &BStr, seg_start: u64, seg_end: u64) -> u64 {
         let regions = match self.path_regions.get(path_name) {
             Some(r) => r,
             None => return 0,
@@ -1458,7 +1458,7 @@ fn load_clustering_bed(path: &PathBuf) -> std::io::Result<ClusteringBedRegions> 
     let reader = BufReader::new(file);
 
     // Collect all regions per path
-    let mut raw_regions: FxHashMap<String, Vec<BedRegion>> = FxHashMap::default();
+    let mut raw_regions: FxHashMap<BString, Vec<BedRegion>> = FxHashMap::default();
 
     for (line_num, line) in reader.lines().enumerate() {
         let line = line?;
@@ -1480,7 +1480,7 @@ fn load_clustering_bed(path: &PathBuf) -> std::io::Result<ClusteringBedRegions> 
             continue;
         }
 
-        let path_name = fields[0].to_string();
+        let path_name: &BStr = fields[0];
         let start: u64 = match fields[1].parse() {
             Ok(v) => v,
             Err(_) => {
@@ -1522,7 +1522,7 @@ fn load_clustering_bed(path: &PathBuf) -> std::io::Result<ClusteringBedRegions> 
     }
 
     // Merge overlapping regions for each path
-    let mut path_regions: FxHashMap<String, Vec<BedRegion>> = FxHashMap::default();
+    let mut path_regions: FxHashMap<BString, Vec<BedRegion>> = FxHashMap::default();
     for (path_name, mut regions) in raw_regions {
         // Sort by start position
         regions.sort_by_key(|r| r.start);
@@ -2185,7 +2185,8 @@ fn jaccard_to_edr(jaccard: f64) -> f64 {
 /// If use_upgma is true, uses pure UPGMA hierarchical clustering with tree cutting
 /// Otherwise uses DBSCAN (matching cosigt exactly)
 fn cluster_paths_by_similarity(
-    paths: &[&GfaPath],
+    graph: &FlatGFA,
+    paths: &[Id<flatgfa::Path>],
     segment_lengths: &[u64], // segment_id -> length (0-indexed by segment_id - 1)
     threshold: Option<f64>,
     use_all_nodes: bool,
@@ -2217,17 +2218,18 @@ fn cluster_paths_by_similarity(
             let mut counts: FxHashMap<u64, u64> = FxHashMap::default();
             let mut path_pos: u64 = 0; // Track cumulative position in path coordinates
 
-            for step in &path.steps {
+            for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_len = segment_lengths
-                    .get(step.segment_id as usize)
+                    .get(step.segment().index())
                     .copied()
                     .unwrap_or(0);
 
                 // Compute bp to count for this segment
+                let name = graph.get_path_name(&graph.paths[*path]);
                 let bp_to_count = match bed_regions {
-                    Some(bed) if bed.has_regions(&path.name) => {
+                    Some(bed) if bed.has_regions(name) => {
                         // Path has BED regions: compute overlap
-                        bed.compute_overlap(&path.name, path_pos, path_pos + seg_len)
+                        bed.compute_overlap(name, path_pos, path_pos + seg_len)
                     }
                     Some(_) => {
                         // BED file provided but path has no regions: count 0 bp (excluded)
@@ -2240,7 +2242,7 @@ fn cluster_paths_by_similarity(
                 };
 
                 if bp_to_count > 0 {
-                    *counts.entry(step.segment_id).or_insert(0) += bp_to_count;
+                    *counts.entry(step.segment().index() as u64).or_insert(0) += bp_to_count;
                 }
 
                 path_pos += seg_len;
@@ -3307,7 +3309,10 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     let pix_per_path = args.path_height;
     let bottom_padding = 5u32;
 
-    let len_to_visualize = graph.total_length;
+    // TODO(adrian): Maybe this should go in a function.
+    let total_length: usize = graph.segs.all().iter().map(|s| s.len()).sum();
+
+    let len_to_visualize = total_length;
     let viz_width = args.width.min(len_to_visualize as u32);
 
     let bin_width = args
@@ -3342,13 +3347,14 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             display_paths.len()
         );
         // Build segment lengths vector for EDR computation
-        let segment_lengths: Vec<u64> = graph.segments.iter().map(|s| s.sequence_len).collect();
+        let segment_lengths: Vec<u64> = graph.segs.all().iter().map(|s| s.len() as u64).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
-        let (paths_to_cluster, unclustered_paths): (Vec<&GfaPath>, Vec<&GfaPath>) =
+        let (paths_to_cluster, unclustered_paths): (Vec<Id<flatgfa::Path>>, Vec<Id<flatgfa::Path>>) =
             if let Some(ref bed) = bed_regions {
+                // TODO(adrian): It seems really inefficient that we are indexing by path name here.
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.iter().partition(|p| bed.has_regions(&p.name));
+                    display_paths.iter().partition(|p| bed.has_regions(graph.get_path_name(graph.paths[*p])));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
@@ -3365,6 +3371,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
         let original_paths = paths_to_cluster.clone(); // Save for medoids TSV
         let result = cluster_paths_by_similarity(
+            graph,
             &paths_to_cluster,
             &segment_lengths,
             args.cluster_threshold,
@@ -5049,6 +5056,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
         let original_paths = paths_to_cluster.clone(); // Save for medoids TSV
         let result = cluster_paths_by_similarity(
+            graph,
             &paths_to_cluster,
             &segment_lengths,
             args.cluster_threshold,
