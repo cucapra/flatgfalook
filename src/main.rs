@@ -3356,7 +3356,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             if let Some(ref bed) = bed_regions {
                 // TODO(adrian): It seems really inefficient that we are indexing by path name here.
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.iter().partition(|p| bed.has_regions(graph.get_path_name(graph.paths[*p])));
+                    display_paths.iter().partition(|p| bed.has_regions(graph.get_path_name(&graph.paths[**p])));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
@@ -6455,7 +6455,7 @@ fn main() {
 
     if is_svg {
         // SVG output
-        let svg_content = render_svg(&args, store.as_ref());
+        let svg_content = render_svg(&args, &store.as_ref());
 
         info!("Saving to {:?}...", args.out);
 
@@ -6473,7 +6473,7 @@ fn main() {
         }
     } else {
         // PNG output
-        let buffer = render(&args, store.as_ref());
+        let buffer = render(&args, &store.as_ref());
 
         let width = u32::from_le_bytes([buffer[0], buffer[1], buffer[2], buffer[3]]);
         let height = u32::from_le_bytes([buffer[4], buffer[5], buffer[6], buffer[7]]);
