@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
-use flatgfa::flatgfa::HeapGFAStore;
+use flatgfa::flatgfa::{HeapGFAStore, FlatGFA};
 use flatgfa::memfile;
 
 #[derive(Parser)]
@@ -3277,7 +3277,7 @@ fn get_depth_color(
     }
 }
 
-fn render(args: &Args, graph: &Graph) -> Vec<u8> {
+fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
         eprintln!("[gfalook] error: -k/--cluster-paths cannot be used with -M/--prefix-merges.");
@@ -4941,7 +4941,7 @@ fn strip_subpath_range(path_name: &str) -> &str {
 }
 
 /// Render graph as SVG with vector fonts
-fn render_svg(args: &Args, graph: &Graph) -> String {
+fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
         eprintln!("[gfalook] error: -k/--cluster-paths cannot be used with -M/--prefix-merges.");
@@ -6418,7 +6418,7 @@ fn main() {
 
     info!("Starting visualization...");
 
-    let graph = match parse_gfa(&args.idx) {
+    let store = match parse_gfa(&args.idx) {
         Ok(g) => g,
         Err(e) => {
             eprintln!("Error loading GFA file: {}", e);
@@ -6426,7 +6426,7 @@ fn main() {
         }
     };
 
-    if graph.paths.is_empty() {
+    if store.as_ref().paths.is_empty() {
         eprintln!("Warning: No paths found in the GFA file.");
     }
 
@@ -6445,7 +6445,7 @@ fn main() {
 
     if is_svg {
         // SVG output
-        let svg_content = render_svg(&args, &graph);
+        let svg_content = render_svg(&args, store.as_ref());
 
         info!("Saving to {:?}...", args.out);
 
@@ -6463,7 +6463,7 @@ fn main() {
         }
     } else {
         // PNG output
-        let buffer = render(&args, &graph);
+        let buffer = render(&args, store.as_ref());
 
         let width = u32::from_le_bytes([buffer[0], buffer[1], buffer[2], buffer[3]]);
         let height = u32::from_le_bytes([buffer[4], buffer[5], buffer[6], buffer[7]]);
