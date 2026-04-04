@@ -4859,7 +4859,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 /// Write clustering results to a TSV file
 fn write_cluster_tsv(
     output_path: &Path,
-    display_paths: &[&GfaPath],
+    display_paths: &[Id<flatgfa::Path>],
     cluster_result: &ClusteringResult,
 ) {
     // Derive TSV path from output path: foo.png -> foo.clusters.tsv
@@ -4880,7 +4880,7 @@ fn write_cluster_tsv(
 /// Write cluster medoids (representatives) to a TSV file
 fn write_medoids_tsv(
     output_path: &Path,
-    original_paths: &[&GfaPath],
+    original_paths: &[Id<flatgfa::Path>],
     cluster_result: &ClusteringResult,
 ) {
     // Derive TSV path from output path: foo.png -> foo.medoids.tsv
@@ -4957,7 +4957,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         std::process::exit(1);
     }
 
-    let mut display_paths: Vec<&GfaPath> = graph.paths.iter().collect();
+    let mut display_paths: Vec<&GfaPath> = graph.paths.all().iter().collect();
 
     if let Some(ref prefix) = args.ignore_prefix {
         display_paths.retain(|p| !p.name.starts_with(prefix));
