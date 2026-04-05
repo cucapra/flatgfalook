@@ -3288,6 +3288,13 @@ fn graph_total_length(graph: &FlatGFA) -> usize {
    graph.segs.all().iter().map(|s| s.len()).sum()
 }
 
+/**
+ * Get the name of a path in a graph.
+ */
+fn get_path_name<'a>(graph: &'a FlatGFA<'a>, path: Id<flatgfa::Path>) -> &'a BStr {
+    graph.get_path_name(&graph.paths[path])
+}
+
 fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
@@ -3305,9 +3312,9 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     if let Some(ref ptd_file) = args.paths_to_display {
         if let Ok(ptd) = load_paths_to_display(ptd_file) {
             let ptd_set: std::collections::HashSet<_> = ptd.iter().map(|s| s.as_ref()).collect();
-            display_paths.retain(|p| ptd_set.contains(graph.get_path_name(&graph.paths[*p])));
+            display_paths.retain(|p| ptd_set.contains(get_path_name(graph, *p)));
             let path_map: FxHashMap<&BStr, Id<flatgfa::Path>> =
-                display_paths.iter().map(|p| (graph.get_path_name(&graph.paths[*p]), *p)).collect();
+                display_paths.iter().map(|p| (get_path_name(graph, *p), *p)).collect();
             display_paths = ptd
                 .iter()
                 .filter_map(|name| path_map.get(name.as_ref()).copied())
@@ -3360,7 +3367,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             if let Some(ref bed) = bed_regions {
                 // TODO(adrian): It seems really inefficient that we are indexing by path name here.
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.iter().partition(|p| bed.has_regions(graph.get_path_name(&graph.paths[**p])));
+                    display_paths.iter().partition(|p| bed.has_regions(get_path_name(graph, **p)));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
