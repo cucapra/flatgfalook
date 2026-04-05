@@ -1697,7 +1697,7 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
     // Assign colors to categories
     let total = categories.len();
     let category_colors: FxHashMap<BString, (u8, u8, u8)> = categories
-        .all().iter()
+        .iter()
         .enumerate()
         .map(|(i, cat)| (cat.clone(), get_annotation_color(i, total)))
         .collect();
@@ -1768,7 +1768,7 @@ fn build_dendrogram(dist_matrix: &[Vec<f64>], cluster_assignments: Option<&[usiz
 
     // Track DBSCAN cluster for each active node (for constrained merging)
     let dbscan_cluster: Vec<Option<usize>> = if let Some(assignments) = cluster_assignments {
-        assignments.all().iter().map(|&c| Some(c)).collect()
+        assignments.iter().map(|&c| Some(c)).collect()
     } else {
         vec![None; n]
     };
@@ -1955,7 +1955,7 @@ fn find_optimal_upgma_threshold(dendrogram: &Dendrogram, max_clusters: Option<us
     let max_clusters = max_clusters.unwrap_or_else(|| n_leaves.div_ceil(9)); // ~11% like DBSCAN
 
     // Collect all merge heights
-    let mut heights: Vec<f64> = dendrogram.nodes.all().iter().map(|n| n.height).collect();
+    let mut heights: Vec<f64> = dendrogram.nodes.iter().map(|n| n.height).collect();
     heights.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
     // Find threshold that gives approximately max_clusters clusters
@@ -1963,7 +1963,7 @@ fn find_optimal_upgma_threshold(dendrogram: &Dendrogram, max_clusters: Option<us
     for i in (0..heights.len()).rev() {
         let threshold = heights[i];
         let clusters = cut_dendrogram_at_height(dendrogram, threshold);
-        let num_clusters = clusters.all().iter().max().map(|&m| m + 1).unwrap_or(1);
+        let num_clusters = clusters.iter().max().map(|&m| m + 1).unwrap_or(1);
 
         if num_clusters >= max_clusters {
             // Found a good threshold
@@ -2282,7 +2282,7 @@ fn cluster_paths_by_similarity(
             .filter(|&node| {
                 let first_bp = path_bp_counts[0].get(&node).copied().unwrap_or(0);
                 path_bp_counts
-                    .all().iter()
+                    .iter()
                     .skip(1)
                     .any(|counts| counts.get(&node).copied().unwrap_or(0) != first_bp)
             })
@@ -2296,10 +2296,10 @@ fn cluster_paths_by_similarity(
 
     // Build filtered bp counts (only include nodes_to_use)
     let filtered_bp_counts: Vec<FxHashMap<u64, u64>> = path_bp_counts
-        .all().iter()
+        .iter()
         .map(|counts| {
             counts
-                .all().iter()
+                .iter()
                 .filter(|(node, _)| nodes_to_use.contains(node))
                 .map(|(&node, &bp)| (node, bp))
                 .collect()
@@ -2311,12 +2311,12 @@ fn cluster_paths_by_similarity(
     // When using variable nodes only, use filtered lengths (consistent intersection/denominator)
     let total_bp: Vec<u64> = if use_all_nodes {
         path_bp_counts
-            .all().iter()
+            .iter()
             .map(|counts| counts.values().sum())
             .collect()
     } else {
         filtered_bp_counts
-            .all().iter()
+            .iter()
             .map(|counts| counts.values().sum())
             .collect()
     };
@@ -2346,11 +2346,11 @@ fn cluster_paths_by_similarity(
         .collect();
 
     // Find max EDR for normalization (like cosigt: maxD <- max(regularMatrix))
-    let max_edr = pairs.all().iter().map(|(_, _, edr)| *edr).fold(0.0f64, f64::max);
+    let max_edr = pairs.iter().map(|(_, _, edr)| *edr).fold(0.0f64, f64::max);
     debug!("Max EDR: {:.6}", max_edr);
 
     // Debug: print first few EDR values for comparison with odgi
-    for (i, j, edr) in pairs.all().iter().take(5) {
+    for (i, j, edr) in pairs.iter().take(5) {
         let jaccard = weighted_jaccard_similarity(
             &filtered_bp_counts[*i],
             &filtered_bp_counts[*j],
@@ -2415,7 +2415,7 @@ fn cluster_paths_by_similarity(
         };
 
         let clusters = cut_dendrogram_at_height(&dg, cut_threshold);
-        let num_clusters = clusters.all().iter().max().map(|&m| m + 1).unwrap_or(1);
+        let num_clusters = clusters.iter().max().map(|&m| m + 1).unwrap_or(1);
         debug!(
             "UPGMA cut at height {:.4} gives {} clusters",
             cut_threshold, num_clusters
@@ -2437,21 +2437,21 @@ fn cluster_paths_by_similarity(
 
         // Run DBSCAN to get cluster assignments
         let clusters = dbscan_cluster(&dist_matrix, eps);
-        let num_clusters = clusters.all().iter().max().map(|&m| m + 1).unwrap_or(1);
+        let num_clusters = clusters.iter().max().map(|&m| m + 1).unwrap_or(1);
         debug!("DBSCAN detected {} clusters", num_clusters);
 
         (clusters, None)
     };
 
     let num_clusters = cluster_assignments
-        .all().iter()
+        .iter()
         .max()
         .map(|&m| m + 1)
         .unwrap_or(1);
 
     // Group paths by cluster
     let mut cluster_members: Vec<Vec<usize>> = vec![Vec::new(); num_clusters];
-    for (i, &cluster) in cluster_assignments.all().iter().enumerate() {
+    for (i, &cluster) in cluster_assignments.iter().enumerate() {
         cluster_members[cluster].push(i);
     }
 
@@ -2475,7 +2475,7 @@ fn cluster_paths_by_similarity(
 
             for &candidate in members {
                 let sum_dist: f64 = members
-                    .all().iter()
+                    .iter()
                     .filter(|&&m| m != candidate)
                     .map(|&m| dist_matrix[candidate][m])
                     .sum();
@@ -2494,7 +2494,7 @@ fn cluster_paths_by_similarity(
     let mut ordering = Vec::with_capacity(n);
     let mut final_cluster_ids = Vec::with_capacity(n);
 
-    for (cluster_id, members) in cluster_members.all().iter().enumerate() {
+    for (cluster_id, members) in cluster_members.iter().enumerate() {
         if members.is_empty() {
             continue;
         }
@@ -2508,7 +2508,7 @@ fn cluster_paths_by_similarity(
 
             // Start with the member that has the most base pairs
             let start = members
-                .all().iter()
+                .iter()
                 .enumerate()
                 .max_by_key(|&(_, &idx)| total_bp[idx])
                 .map(|(local_idx, _)| local_idx)
@@ -2519,14 +2519,14 @@ fn cluster_paths_by_similarity(
             final_cluster_ids.push(cluster_id);
             let mut current = start;
 
-            while ordering.len() < ordering.capacity() && placed.all().iter().filter(|&&p| !p).count() > 0
+            while ordering.len() < ordering.capacity() && placed.iter().filter(|&&p| !p).count() > 0
             {
                 // Find nearest unplaced member within this cluster
                 let current_global = members[current];
                 let mut best_local = None;
                 let mut best_dist = f64::MAX;
 
-                for (local_idx, &global_idx) in members.all().iter().enumerate() {
+                for (local_idx, &global_idx) in members.iter().enumerate() {
                     if !placed[local_idx] {
                         let dist = dist_matrix[current_global][global_idx];
                         if dist < best_dist {
@@ -2958,7 +2958,7 @@ fn render_annotation_legend_png(
 
     // Calculate width needed for each category
     let category_widths: Vec<u32> = categories
-        .all().iter()
+        .iter()
         .map(|cat| swatch_size + text_padding + (cat.len() as u32 * char_size) + item_spacing)
         .collect();
 
@@ -2995,7 +2995,7 @@ fn render_annotation_legend_png(
     let y_center = legend_height / 2;
     let swatch_y = y_center.saturating_sub(swatch_size / 2);
 
-    for category in categories.all().iter().take(visible_count) {
+    for category in categories.iter().take(visible_count) {
         // Use grey for NA, otherwise look up in category_colors
         let (r, g, b) = if category == "NA" {
             NA_COLOR
@@ -3088,7 +3088,7 @@ fn render_annotation_legend_svg(
 
     // Calculate total legend width for centering
     let total_legend_width: f64 = categories
-        .all().iter()
+        .iter()
         .map(|cat| {
             let text_width = cat.len() as f64 * font_size * 0.6;
             swatch_size + text_padding + text_width + item_spacing
@@ -3269,7 +3269,7 @@ fn get_depth_color(
     } else if no_grey_depth {
         // Use full Spectral 11 range for all depths (skip grey colors at indices 0-1)
         let cuts = [1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5];
-        for (i, &cut) in cuts.all().iter().enumerate() {
+        for (i, &cut) in cuts.iter().enumerate() {
             if mean_depth <= cut {
                 return COLORBREWER_SPECTRAL_13[i + 2];
             }
@@ -3280,7 +3280,7 @@ fn get_depth_color(
         let cuts = [
             0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5,
         ];
-        for (i, &cut) in cuts.all().iter().enumerate() {
+        for (i, &cut) in cuts.iter().enumerate() {
             if mean_depth <= cut {
                 return COLORBREWER_SPECTRAL_13[i];
             }
@@ -3291,7 +3291,7 @@ fn get_depth_color(
 
 /// Get the total number of base pairs in all segments in a graph.
 fn graph_total_length(graph: &FlatGFA) -> usize {
-   graph.segs.all().iter().map(|s| s.len()).sum()
+   graph.segs.iter().map(|s| s.len()).sum()
 }
 
 /// Get the name of a path in a graph.
@@ -3331,7 +3331,7 @@ fn get_segment_n_counts(graph: &FlatGFA) -> Vec<u64> {
         .all()
         .map(|seg| {
             let seq = graph.get_seq(seg);
-            seq.all().iter().filter(|&&b| b == b'N' || b == b'n').count() as u64
+            seq.iter().filter(|&&b| b == b'N' || b == b'n').count() as u64
         })
         .collect()
 }
@@ -3356,12 +3356,12 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
     if let Some(ref ptd_file) = args.paths_to_display {
         if let Ok(ptd) = load_paths_to_display(ptd_file) {
-            let ptd_set: std::collections::HashSet<_> = ptd.all().iter().map(|s| s.as_ref()).collect();
+            let ptd_set: std::collections::HashSet<_> = ptd.iter().map(|s| s.as_ref()).collect();
             display_paths.retain(|p| ptd_set.contains(get_path_name(graph, *p)));
             let path_map: FxHashMap<&BStr, Id<flatgfa::Path>> =
-                display_paths.all().iter().map(|p| (get_path_name(graph, *p), *p)).collect();
+                display_paths.iter().map(|p| (get_path_name(graph, *p), *p)).collect();
             display_paths = ptd
-                .all().iter()
+                .iter()
                 .filter_map(|name| path_map.get(name.as_ref()).copied())
                 .collect();
         }
@@ -3405,14 +3405,14 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             display_paths.len()
         );
         // Build segment lengths vector for EDR computation
-        let segment_lengths: Vec<u64> = graph.segs.all().iter().map(|s| s.len() as u64).collect();
+        let segment_lengths: Vec<u64> = graph.segs.iter().map(|s| s.len() as u64).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
         let (paths_to_cluster, unclustered_paths): (Vec<Id<flatgfa::Path>>, Vec<Id<flatgfa::Path>>) =
             if let Some(ref bed) = bed_regions {
                 // TODO(adrian): It seems really inefficient that we are indexing by path name here.
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.all().iter().partition(|p| bed.has_regions(get_path_name(graph, **p)));
+                    display_paths.iter().partition(|p| bed.has_regions(get_path_name(graph, **p)));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
@@ -3444,7 +3444,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // Rebuild display_paths: clustered paths in order, then unclustered
         display_paths = result
             .ordering
-            .all().iter()
+            .iter()
             .map(|&i| paths_to_cluster[i])
             .collect();
         let num_clustered = display_paths.len();
@@ -3485,10 +3485,10 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // Filter to representatives only if requested (PNG)
         // Note: only applies to clustered paths, unclustered paths are not included
         let final_result = if args.cluster_representatives {
-            let rep_set: FxHashSet<usize> = result.representatives.all().iter().copied().collect();
+            let rep_set: FxHashSet<usize> = result.representatives.iter().copied().collect();
             let mut filtered_paths = Vec::new();
             let mut filtered_cluster_ids = Vec::new();
-            for (pos, &orig_idx) in result.ordering.all().iter().enumerate() {
+            for (pos, &orig_idx) in result.ordering.iter().enumerate() {
                 if rep_set.contains(&orig_idx) {
                     filtered_paths.push(paths_to_cluster[orig_idx]);
                     filtered_cluster_ids.push(result.cluster_ids[pos]);
@@ -3576,22 +3576,22 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     let max_name_len = if args.compressed_mode {
         "COMPRESSED_MODE".len()
     } else if let Some(ref pg) = path_grouping {
-        pg.prefixes.all().iter().map(|p| p.len()).max().unwrap_or(10)
+        pg.prefixes.iter().map(|p| p.len()).max().unwrap_or(10)
     } else if args.cluster_representatives {
         // Account for " (n=X)" suffix: max cluster size determines suffix length
         let max_size = cluster_result
             .as_ref()
-            .map(|cr| cr.cluster_sizes.all().iter().max().copied().unwrap_or(1))
+            .map(|cr| cr.cluster_sizes.iter().max().copied().unwrap_or(1))
             .unwrap_or(1);
         let suffix_len = format!(" (n={})", max_size).len();
         display_paths
-            .all().iter()
+            .iter()
             .map(|p| get_path_name(graph, *p).len() + suffix_len)
             .max()
             .unwrap_or(10)
     } else {
         display_paths
-            .all().iter()
+            .iter()
             .map(|p| get_path_name(graph, *p).len())
             .max()
             .unwrap_or(10)
@@ -3692,7 +3692,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 let mut cumulative_gap: u32 = 0;
                 let mut prev_cluster_id: Option<usize> = None;
 
-                for (display_pos, &orig_idx) in dg.leaf_order.all().iter().enumerate() {
+                for (display_pos, &orig_idx) in dg.leaf_order.iter().enumerate() {
                     if orig_idx < n_leaves && display_pos < cr.cluster_ids.len() {
                         // cluster_ids is indexed by display position, not original index
                         let cluster_id = cr.cluster_ids[display_pos];
@@ -3719,17 +3719,17 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // NA is added at the end if any path doesn't match a prefix
     let filtered_categories: Vec<BString> = if let Some(ref ann) = annotations {
         let used_categories: std::collections::HashSet<&BStr> = display_paths
-            .all().iter()
+            .iter()
             .map(|p| ann.get_annotation(get_path_name(graph, *p)))
             .collect();
         let mut cats: Vec<BString> = ann
             .categories
-            .all().iter()
+            .iter()
             .filter(|c| used_categories.contains(c.as_ref()))
             .cloned()
             .collect();
         // Add NA at the end if any path has it
-        if used_categories.contains("NA".into()) && !cats.all().iter().any(|c| c == "NA") {
+        if used_categories.contains("NA".into()) && !cats.iter().any(|c| c == "NA") {
             cats.push("NA".into());
         }
         cats
@@ -3773,7 +3773,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // Calculate max path length for longest-path option
     let max_path_length: u64 = if args.longest_path || args.change_darkness {
         display_paths
-            .all().iter()
+            .iter()
             .map(|path| {
                 graph.get_path_steps(&graph.paths[*path])
                     .map(|step| {
@@ -3800,7 +3800,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // Aggregate bins across all paths
         let mut aggregated_bins: FxHashMap<usize, (f64, u32)> = FxHashMap::default(); // (sum_depth, count)
 
-        for path in display_paths.all().iter() {
+        for path in display_paths.iter() {
             for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment();
                 if seg_id.index() < graph.segs.len() {
@@ -3821,7 +3821,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // Normalize aggregated bins to get mean depth across all paths
         let num_paths = display_paths.len() as f64;
         let mut compressed_bins: FxHashMap<usize, f64> = FxHashMap::default();
-        for (bin_idx, (sum_depth, _count)) in aggregated_bins.all().iter() {
+        for (bin_idx, (sum_depth, _count)) in aggregated_bins.iter() {
             // Normalize: divide by bin_width to get depth, then by num_paths for mean
             let mean_depth = sum_depth / bin_width / num_paths;
             compressed_bins.insert(*bin_idx, mean_depth);
@@ -3893,7 +3893,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
         let mut path_data: Vec<PathBinData> = Vec::with_capacity(display_paths.len());
 
-        for path in display_paths.all().iter() {
+        for path in display_paths.iter() {
             let mut bins: FxHashMap<usize, BinInfo> = FxHashMap::default();
             let mut min_bin = usize::MAX;
             let mut max_bin = 0usize;
@@ -3912,7 +3912,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                     };
                     let is_highlighted = highlight_nodes
                         .as_ref()
-                        .is_some_and(|hn| hn.contains(&step.segment_id));
+                        .is_some_and(|hn| hn.contains(&(step.segment().index() as u64)));
 
                     for k in 0..seg_len {
                         let pos = offset + k;
@@ -3922,7 +3922,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
                         let entry = bins.entry(curr_bin).or_default();
                         entry.mean_depth += 1.0;
-                        if step.is_reverse {
+                        if step.orient().is_backward() {
                             entry.mean_inv += 1.0;
                         }
                         entry.mean_pos += path_pos as f64;
@@ -4024,7 +4024,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         }
 
         // Render each path at its packed Y position
-        for (path_idx, (pd, path)) in path_data.all().iter().zip(display_paths.all().iter()).enumerate() {
+        for (path_idx, (pd, path)) in path_data.iter().zip(display_paths.iter()).enumerate() {
             let y_start = legend_height + path_rows[path_idx] as u32 * pix_per_path;
             let (path_r, path_g, path_b) = pd.color;
             let path_length: u64 = graph.get_path_steps(&graph.paths[*path])
@@ -4166,7 +4166,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     let mut cumulative_gap: u32 = 0;
     let cluster_gap = args.cluster_gap;
 
-    for (path_idx, path) in display_paths.all().iter().enumerate() {
+    for (path_idx, path) in display_paths.iter().enumerate() {
         // Skip normal rendering in compressed mode or pack_paths mode
         if args.compressed_mode || args.pack_paths {
             break;
@@ -4361,14 +4361,14 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 // Check if this segment is highlighted
                 let is_highlighted = highlight_nodes
                     .as_ref()
-                    .is_some_and(|hn| hn.contains(&step.segment_id));
+                    .is_some_and(|hn| hn.contains(&(step.segment().index() as u64)));
 
                 for k in 0..seg_len {
                     let pos = offset + k;
                     let curr_bin = (pos as f64 / bin_width) as usize;
                     let entry = bins.entry(curr_bin).or_default();
                     entry.mean_depth += 1.0;
-                    if step.is_reverse {
+                    if step.orient().is_backward() {
                         entry.mean_inv += 1.0;
                     }
                     entry.mean_pos += path_pos as f64;
@@ -4627,7 +4627,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // Also calculate pixel range where the path actually appears
         let (coord_start, coord_end, pixel_start, pixel_end) = if is_pangenomic {
             (0u64, len_to_visualize, 0u32, viz_width)
-        } else if let Some(path) = graph.paths.all().iter().find(|p| graph.get_path_name(p) == *coord_system) {
+        } else if let Some(path) = graph.paths.iter().find(|p| graph.get_path_name(p) == *coord_system) {
             // Calculate path length and pangenomic positions from its steps
             let mut path_len: u64 = 0;
             let mut pangenomic_start: Option<u64> = None;
@@ -4914,7 +4914,7 @@ fn write_cluster_tsv(
     let tsv_path = output_path.with_extension("clusters.tsv");
 
     let mut content = String::from("path.name\tcluster\n");
-    for (path_idx, path) in display_paths.all().iter().enumerate() {
+    for (path_idx, path) in display_paths.iter().enumerate() {
         let cluster_id = cluster_result.cluster_ids[path_idx];
         content.push_str(&format!("{}\t{}\n", get_path_name(graph, *path), cluster_id));
     }
@@ -4937,8 +4937,8 @@ fn write_medoids_tsv(
     let mut content = String::from("cluster\tmedoid.path\tcluster.size\n");
     for (cluster_id, (&medoid_idx, &size)) in cluster_result
         .representatives
-        .all().iter()
-        .zip(cluster_result.cluster_sizes.all().iter())
+        .iter()
+        .zip(cluster_result.cluster_sizes.iter())
         .enumerate()
     {
         let medoid_name = get_path_name(graph, original_paths[medoid_idx]);
@@ -5017,12 +5017,12 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
     if let Some(ref ptd_file) = args.paths_to_display {
         if let Ok(ptd) = load_paths_to_display(ptd_file) {
-            let ptd_set: std::collections::HashSet<_> = ptd.all().iter().collect();
+            let ptd_set: std::collections::HashSet<_> = ptd.iter().collect();
             display_paths.retain(|p| ptd_set.contains(&p.name));
             let path_map: FxHashMap<&String, &GfaPath> =
-                display_paths.all().iter().map(|p| (&p.name, *p)).collect();
+                display_paths.iter().map(|p| (&p.name, *p)).collect();
             display_paths = ptd
-                .all().iter()
+                .iter()
                 .filter_map(|name| path_map.get(name).copied())
                 .collect();
         }
@@ -5037,7 +5037,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Find the smallest segment length
         let min_seg_len = graph
             .segments
-            .all().iter()
+            .iter()
             .map(|s| s.len() as u64)
             .filter(|&len| len > 0)
             .min()
@@ -5087,13 +5087,13 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             display_paths.len()
         );
         // Build segment lengths vector for EDR computation
-        let segment_lengths: Vec<u64> = graph.segs.all().iter().map(|s| s.len() as u64).collect();
+        let segment_lengths: Vec<u64> = graph.segs.iter().map(|s| s.len() as u64).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
         let (paths_to_cluster, unclustered_paths): (Vec<&GfaPath>, Vec<&GfaPath>) =
             if let Some(ref bed) = bed_regions {
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.all().iter().partition(|p| bed.has_regions(&p.name));
+                    display_paths.iter().partition(|p| bed.has_regions(&p.name));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
@@ -5125,7 +5125,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Rebuild display_paths: clustered paths in order, then unclustered
         display_paths = result
             .ordering
-            .all().iter()
+            .iter()
             .map(|&i| paths_to_cluster[i])
             .collect();
         let num_clustered = display_paths.len();
@@ -5166,10 +5166,10 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Filter to representatives only if requested (SVG)
         // Note: only applies to clustered paths, unclustered paths are not included
         let final_result = if args.cluster_representatives {
-            let rep_set: FxHashSet<usize> = result.representatives.all().iter().copied().collect();
+            let rep_set: FxHashSet<usize> = result.representatives.iter().copied().collect();
             let mut filtered_paths = Vec::new();
             let mut filtered_cluster_ids = Vec::new();
-            for (pos, &orig_idx) in result.ordering.all().iter().enumerate() {
+            for (pos, &orig_idx) in result.ordering.iter().enumerate() {
                 if rep_set.contains(&orig_idx) {
                     filtered_paths.push(paths_to_cluster[orig_idx]);
                     filtered_cluster_ids.push(result.cluster_ids[pos]);
@@ -5246,22 +5246,22 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     let max_name_len = if args.compressed_mode {
         "COMPRESSED_MODE".len()
     } else if let Some(ref pg) = path_grouping {
-        pg.prefixes.all().iter().map(|p| p.len()).max().unwrap_or(10)
+        pg.prefixes.iter().map(|p| p.len()).max().unwrap_or(10)
     } else if args.cluster_representatives {
         // Account for " (n=X)" suffix: max cluster size determines suffix length
         let max_size = cluster_result
             .as_ref()
-            .map(|cr| cr.cluster_sizes.all().iter().max().copied().unwrap_or(1))
+            .map(|cr| cr.cluster_sizes.iter().max().copied().unwrap_or(1))
             .unwrap_or(1);
         let suffix_len = format!(" (n={})", max_size).len();
         display_paths
-            .all().iter()
+            .iter()
             .map(|p| get_path_name(graph, *p).len() + suffix_len)
             .max()
             .unwrap_or(10)
     } else {
         display_paths
-            .all().iter()
+            .iter()
             .map(|p| get_path_name(graph, *p).len())
             .max()
             .unwrap_or(10)
@@ -5355,7 +5355,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     // Calculate max path length for longest-path option
     let max_path_length: u64 = if args.longest_path || args.change_darkness {
         display_paths
-            .all().iter()
+            .iter()
             .map(|path| {
                 graph.get_path_steps(&graph.paths[*path])
                     .map(|step| {
@@ -5383,7 +5383,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let mut cumulative_gap: f64 = 0.0;
                 let mut prev_cluster_id: Option<usize> = None;
 
-                for (display_pos, &orig_idx) in dg.leaf_order.all().iter().enumerate() {
+                for (display_pos, &orig_idx) in dg.leaf_order.iter().enumerate() {
                     if orig_idx < n_leaves && display_pos < cr.cluster_ids.len() {
                         // cluster_ids is indexed by display position, not original index
                         let cluster_id = cr.cluster_ids[display_pos];
@@ -5426,17 +5426,17 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Filter categories to only those used by paths in the graph
         // NA is added at the end if any path doesn't match a prefix
         let used_categories: std::collections::HashSet<&str> = display_paths
-            .all().iter()
+            .iter()
             .map(|p| ann.get_annotation(get_path_name(graph, *p)))
             .collect();
         let mut filtered_categories: Vec<String> = ann
             .categories
-            .all().iter()
+            .iter()
             .filter(|c| used_categories.contains(c.as_str()))
             .cloned()
             .collect();
         // Add NA at the end if any path has it
-        if used_categories.contains("NA") && !filtered_categories.all().iter().any(|c| c == "NA") {
+        if used_categories.contains("NA") && !filtered_categories.iter().any(|c| c == "NA") {
             filtered_categories.push("NA".to_string());
         }
 
@@ -5477,7 +5477,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Aggregate bins across all paths
         let mut aggregated_bins: FxHashMap<usize, f64> = FxHashMap::default();
 
-        for path in display_paths.all().iter() {
+        for path in display_paths.iter() {
             for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment();
                 if seg_id.index() < graph.segs.len() {
@@ -5496,7 +5496,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Normalize to mean depth
         let num_paths = display_paths.len() as f64;
         let compressed_bins: FxHashMap<usize, f64> = aggregated_bins
-            .all().iter()
+            .iter()
             .map(|(k, v)| (*k, v / bin_width / num_paths))
             .collect();
 
@@ -5582,7 +5582,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
         let mut path_data: Vec<PathBinDataSvg> = Vec::with_capacity(display_paths.len());
 
-        for path in display_paths.all().iter() {
+        for path in display_paths.iter() {
             let mut bins: FxHashMap<usize, BinInfo> = FxHashMap::default();
             let mut min_bin = usize::MAX;
             let mut max_bin = 0usize;
@@ -5601,7 +5601,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                     };
                     let is_highlighted = highlight_nodes
                         .as_ref()
-                        .is_some_and(|hn| hn.contains(&step.segment_id));
+                        .is_some_and(|hn| hn.contains(&(step.segment().index() as u64)));
 
                     for k in 0..seg_len {
                         let pos = offset + k;
@@ -5611,7 +5611,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
                         let entry = bins.entry(curr_bin).or_default();
                         entry.mean_depth += 1.0;
-                        if step.is_reverse {
+                        if step.orient().is_backward() {
                             entry.mean_inv += 1.0;
                         }
                         entry.mean_pos += path_pos as f64;
@@ -5694,7 +5694,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         max_y = legend_height + packed_path_space as f64;
 
         // Render each path at its packed Y position
-        for (path_idx, (pd, path)) in path_data.all().iter().zip(display_paths.all().iter()).enumerate() {
+        for (path_idx, (pd, path)) in path_data.iter().zip(display_paths.iter()).enumerate() {
             let y_start = legend_height + path_rows[path_idx] as f64 * pix_per_path as f64;
             let (path_r, path_g, path_b) = pd.color;
             let path_length: u64 = graph.get_path_steps(&graph.paths[*path])
@@ -5715,7 +5715,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
             // Group bins by color for rect merging
             let mut sorted_bins: Vec<(usize, &BinInfo)> =
-                pd.bins.all().iter().map(|(k, v)| (*k, v)).collect();
+                pd.bins.iter().map(|(k, v)| (*k, v)).collect();
             sorted_bins.sort_by_key(|(k, _)| *k);
 
             let mut prev_x: Option<usize> = None;
@@ -5835,7 +5835,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     let mut cumulative_gap: f64 = 0.0;
     let cluster_gap = args.cluster_gap as f64;
 
-    for (path_idx, path) in display_paths.all().iter().enumerate() {
+    for (path_idx, path) in display_paths.iter().enumerate() {
         // Skip normal rendering in compressed mode or pack_paths mode
         if args.compressed_mode || args.pack_paths {
             break;
@@ -5987,14 +5987,14 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 // Check if this segment is highlighted
                 let is_highlighted = highlight_nodes
                     .as_ref()
-                    .is_some_and(|hn| hn.contains(&step.segment_id));
+                    .is_some_and(|hn| hn.contains(&(step.segment().index() as u64)));
 
                 for k in 0..seg_len {
                     let pos = offset + k;
                     let curr_bin = (pos as f64 / bin_width) as usize;
                     let entry = bins.entry(curr_bin).or_default();
                     entry.mean_depth += 1.0;
-                    if step.is_reverse {
+                    if step.orient().is_backward() {
                         entry.mean_inv += 1.0;
                     }
                     entry.mean_pos += path_pos as f64;
@@ -6029,7 +6029,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         };
 
         // Merge consecutive bins with same color into single rectangles
-        let mut bin_list: Vec<(&usize, &BinInfo)> = bins.all().iter().collect();
+        let mut bin_list: Vec<(&usize, &BinInfo)> = bins.iter().collect();
         bin_list.sort_by_key(|(idx, _)| **idx);
 
         // Helper to get color for a bin
@@ -6276,7 +6276,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             (0u64, len_to_visualize, 0.0f64, viz_width as f64)
         } else {
             // Find the path with the specified name
-            if let Some(path) = graph.paths.all().iter().find(|p| graph.get_path_name(p) == *coord_system) {
+            if let Some(path) = graph.paths.iter().find(|p| graph.get_path_name(p) == *coord_system) {
                 // Calculate path length and pangenomic positions from its steps
                 let mut path_len: u64 = 0;
                 let mut pangenomic_start: Option<u64> = None;
