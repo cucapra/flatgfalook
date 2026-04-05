@@ -1646,7 +1646,8 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
     let mut is_first_line = true;
 
     for line in content.lines() {
-        let line = line?.trim();
+        let line = line?;
+        let line = line.trim();
 
         // Skip empty lines
         if line.is_empty() {
@@ -3363,7 +3364,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 display_paths.iter().map(|p| (get_path_name(graph, *p), *p)).collect();
             display_paths = ptd
                 .iter()
-                .filter_map(|name| path_map.get(name.as_ref()).copied())
+                .filter_map(|name| path_map.get(BStr::new(name)).copied())
                 .collect();
         }
     }
@@ -3726,11 +3727,11 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         let mut cats: Vec<BString> = ann
             .categories
             .iter()
-            .filter(|c| used_categories.contains(c.as_ref()))
+            .filter(|c| used_categories.contains(BStr::new(c)))
             .cloned()
             .collect();
         // Add NA at the end if any path has it
-        if used_categories.contains("NA".into()) && !cats.iter().any(|c| c == "NA") {
+        if used_categories.contains(BStr::new("NA")) && !cats.iter().any(|c| c == "NA") {
             cats.push("NA".into());
         }
         cats
@@ -5033,7 +5034,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 display_paths.iter().map(|p| (get_path_name(graph, *p), *p)).collect();
             display_paths = ptd
                 .iter()
-                .filter_map(|name| path_map.get(name.as_ref()).copied())
+                .filter_map(|name| path_map.get(BStr::new(name)).copied())
                 .collect();
         }
     }
@@ -5442,7 +5443,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let mut filtered_categories: Vec<String> = ann
             .categories
             .iter()
-            .filter(|c| used_categories.contains(c.as_ref()))
+            .filter(|c| used_categories.contains(BStr::new(c)))
             .map(|c| c.to_string())
             .collect();
         // Add NA at the end if any path has it
