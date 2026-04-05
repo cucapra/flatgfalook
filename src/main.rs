@@ -3286,39 +3286,41 @@ fn get_depth_color(
     }
 }
 
-/**
- * Get the total number of base pairs in all segments in a graph.
- */
+/// Get the total number of base pairs in all segments in a graph.
 fn graph_total_length(graph: &FlatGFA) -> usize {
    graph.segs.all().iter().map(|s| s.len()).sum()
 }
 
-/**
- * Get the name of a path in a graph.
- */
+/// Get the name of a path in a graph.
 fn get_path_name<'a>(graph: &'a FlatGFA<'a>, path: Id<flatgfa::Path>) -> &'a BStr {
     graph.get_path_name(&graph.paths[path])
 }
 
-/**
- * Get a Vec of all the IDs available in a pool.
- *
- * TODO(adrian): Everywhere this occurs is an efficiency smell. But let's not
- * fix that for now.
- */
+/// Get a Vec of all the IDs available in a pool.
+///
+/// TODO(adrian): Everywhere this occurs is an efficiency smell. But let's not
+/// fix that for now.
 fn pool_all_ids<T>(pool: Pool<T>) -> Vec<Id<T>> {
     (0..pool.len()).map(Id::new).collect()
 }
 
-fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
-    // Precompute segment offsets (linear layout)
-    // TODO(adrian): Obvious source of inefficiency.
+/// Compute segment offsets (linear layout) for a FlatGFA graph.
+///
+/// TODO(adrian): This is an efficiency problem wherever it occurs. Also, it
+/// needs a little thought to make sure it matches `Graph::segment_offsets`.
+fn get_segment_offsets(graph: &FlatGFA) -> Vec<u64> {
     let mut segment_offsets = Vec::with_capacity(graph.segs.len());
     let mut curr_offset = 0u64;
     for seg in graph.segs.all() {
         segment_offsets.push(curr_offset);
         curr_offset += seg.len() as u64;
     }
+    segment_offsets
+}
+
+fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
+    // Precompute segment offsets (linear layout)
+    let segment_offsets = get_segment_offsets(graph);
 
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
@@ -3784,7 +3786,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
-                    let offset = graph.segment_offsets[seg_id];
+                    let offset = segment_offsets[seg_id];
                     let seg_len = graph.segs[seg_id].sequence_len;
 
                     for k in 0..seg_len {
@@ -3882,7 +3884,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
-                    let offset = graph.segment_offsets[seg_id];
+                    let offset = segment_offsets[seg_id];
                     let seg_len = graph.segs[seg_id].sequence_len;
                     let n_count = graph.segs[seg_id].n_count;
                     let n_proportion = if seg_len > 0 {
@@ -4332,7 +4334,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         for step in graph.get_path_steps(path) {
             let seg_id = step.segment_id as usize;
             if seg_id < graph.segs.len() {
-                let offset = graph.segment_offsets[seg_id];
+                let offset = segment_offsets[seg_id];
                 let seg_len = graph.segs[seg_id].sequence_len;
                 let n_count = graph.segs[seg_id].n_count;
                 // Proportion of N's in this segment (for uncalled base coloring)
@@ -4621,7 +4623,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
                     let seg_len = graph.segs[seg_id].sequence_len;
-                    let seg_offset = graph.segment_offsets[seg_id];
+                    let seg_offset = segment_offsets[seg_id];
 
                     // Track first segment's pangenomic position
                     if pangenomic_start.is_none() {
@@ -4754,9 +4756,9 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
         if from_id < graph.segs.len() && to_id < graph.segs.len() {
             // Get positions of from and to segments
-            let from_offset = graph.segment_offsets[from_id];
+            let from_offset = segment_offsets[from_id];
             let from_len = graph.segs[from_id].sequence_len;
-            let to_offset = graph.segment_offsets[to_id];
+            let to_offset = segment_offsets[to_id];
 
             // Calculate edge endpoints based on orientation
             // For forward orientation, edge exits from end of segment
@@ -4986,13 +4988,7 @@ fn strip_subpath_range(path_name: &str) -> &str {
 /// Render graph as SVG with vector fonts
 fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     // Precompute segment offsets (linear layout)
-    // TODO(adrian): Obvious source of inefficiency.
-    let mut segment_offsets = Vec::with_capacity(graph.segs.len());
-    let mut curr_offset = 0u64;
-    for seg in graph.segs.all() {
-        segment_offsets.push(curr_offset);
-        curr_offset += seg.len() as u64;
-    }
+    let segment_offsets = get_segment_offsets(graph);
 
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
@@ -5473,7 +5469,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
-                    let offset = graph.segment_offsets[seg_id];
+                    let offset = segment_offsets[seg_id];
                     let seg_len = graph.segs[seg_id].sequence_len;
 
                     for k in 0..seg_len {
@@ -5583,7 +5579,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
-                    let offset = graph.segment_offsets[seg_id];
+                    let offset = segment_offsets[seg_id];
                     let seg_len = graph.segs[seg_id].sequence_len;
                     let n_count = graph.segs[seg_id].n_count;
                     let n_proportion = if seg_len > 0 {
@@ -5970,7 +5966,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         for step in graph.get_path_steps(path) {
             let seg_id = step.segment_id as usize;
             if seg_id < graph.segs.len() {
-                let offset = graph.segment_offsets[seg_id];
+                let offset = segment_offsets[seg_id];
                 let seg_len = graph.segs[seg_id].sequence_len;
                 let n_count = graph.segs[seg_id].n_count;
                 // Proportion of N's in this segment (for uncalled base coloring)
@@ -6282,7 +6278,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                     let seg_id = step.segment_id as usize;
                     if seg_id < graph.segs.len() {
                         let seg_len = graph.segs[seg_id].sequence_len;
-                        let seg_offset = graph.segment_offsets[seg_id];
+                        let seg_offset = segment_offsets[seg_id];
 
                         // Track first segment's pangenomic position
                         if pangenomic_start.is_none() {
@@ -6384,9 +6380,9 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // TODO(adrian): Removing this bounds check because it is impossible "by
         // construction" in FlatGFA.
         if true {
-            let from_offset = graph.segment_offsets[from_id];
+            let from_offset = segment_offsets[from_id];
             let from_len = graph.segs[from_id].len();
-            let to_offset = graph.segment_offsets[to_id];
+            let to_offset = segment_offsets[to_id];
 
             let a_pos = match edge.from.orient() {
                 Orientation::Backward => from_offset as f64 / bin_width,
