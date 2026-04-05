@@ -4626,7 +4626,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // For path-based coordinates, find the path and use its length
         // Also calculate pixel range where the path actually appears
         let (coord_start, coord_end, pixel_start, pixel_end) = if is_pangenomic {
-            (0u64, len_to_visualize, 0u32, viz_width)
+            (0u64, len_to_visualize as u64, 0u32, viz_width)
         } else if let Some(path) = graph.paths.all().iter().find(|p| graph.get_path_name(p) == *coord_system) {
             // Calculate path length and pangenomic positions from its steps
             let mut path_len: u64 = 0;
@@ -4667,7 +4667,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 "Path '{}' not found, using pangenomic coordinates",
                 coord_system
             );
-            (0u64, len_to_visualize, 0u32, viz_width)
+            (0u64, len_to_visualize as u64, 0u32, viz_width)
         };
 
         // Calculate the pixel width of the path's range
@@ -6275,7 +6275,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // For path-based coordinates, find the path and use its length
         // Also calculate pixel range where the path actually appears
         let (coord_start, coord_end, pixel_start, pixel_end) = if is_pangenomic {
-            (0u64, len_to_visualize, 0.0f64, viz_width as f64)
+            (0u64, len_to_visualize as u64, 0.0f64, viz_width as f64)
         } else {
             // Find the path with the specified name
             if let Some(path) = graph.paths.all().iter().find(|p| graph.get_path_name(p) == *coord_system) {
@@ -6319,7 +6319,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                     "Path '{}' not found, using pangenomic coordinates",
                     coord_system
                 );
-                (0u64, len_to_visualize, 0.0f64, viz_width as f64)
+                (0u64, len_to_visualize as u64, 0.0f64, viz_width as f64)
             }
         };
 
