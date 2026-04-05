@@ -3311,6 +3311,15 @@ fn pool_all_ids<T>(pool: Pool<T>) -> Vec<Id<T>> {
 }
 
 fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
+    // Precompute segment offsets (linear layout)
+    // TODO(adrian): Obvious source of inefficiency.
+    let mut segment_offsets = Vec::with_capacity(graph.segs.len());
+    let mut curr_offset = 0u64;
+    for seg in graph.segs.all() {
+        segment_offsets.push(curr_offset);
+        curr_offset += seg.len() as u64;
+    }
+
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
         eprintln!("[gfalook] error: -k/--cluster-paths cannot be used with -M/--prefix-merges.");
@@ -3745,12 +3754,12 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         display_paths
             .iter()
             .map(|path| {
-                path.steps
+                graph.get_path_steps(&graph.paths[*path])
                     .iter()
                     .map(|step| {
-                        let seg_id = step.segment_id as usize;
-                        if seg_id < graph.segments.len() {
-                            graph.segments[seg_id].sequence_len
+                        let seg_id = step.segment().index();
+                        if seg_id < graph.segs.len() {
+                            graph.segs[step.segment()].len() as u64
                         } else {
                             0
                         }
@@ -4976,6 +4985,15 @@ fn strip_subpath_range(path_name: &str) -> &str {
 
 /// Render graph as SVG with vector fonts
 fn render_svg(args: &Args, graph: &FlatGFA) -> String {
+    // Precompute segment offsets (linear layout)
+    // TODO(adrian): Obvious source of inefficiency.
+    let mut segment_offsets = Vec::with_capacity(graph.segs.len());
+    let mut curr_offset = 0u64;
+    for seg in graph.segs.all() {
+        segment_offsets.push(curr_offset);
+        curr_offset += seg.len() as u64;
+    }
+
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
         eprintln!("[gfalook] error: -k/--cluster-paths cannot be used with -M/--prefix-merges.");
@@ -5330,12 +5348,12 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         display_paths
             .iter()
             .map(|path| {
-                path.steps
+                graph.get_path_steps(&graph.paths[*path])
                     .iter()
                     .map(|step| {
-                        let seg_id = step.segment_id as usize;
-                        if seg_id < graph.segments.len() {
-                            graph.segments[seg_id].sequence_len
+                        let seg_id = step.segment().index();
+                        if seg_id < graph.segs.len() {
+                            graph.segs[step.segment()].len() as u64
                         } else {
                             0
                         }
