@@ -1613,7 +1613,7 @@ impl AnnotationData {
     }
 
     /// Get color for a category (grey for NA, palette color for others)
-    fn get_color(&self, category: &bstr) -> (u8, u8, u8) {
+    fn get_color(&self, category: &BStr) -> (u8, u8, u8) {
         if category == "NA" {
             NA_COLOR
         } else {
@@ -1631,9 +1631,9 @@ impl AnnotationData {
 /// The prefix column matches path names that start with that prefix
 /// Supports both TSV (tab-separated) and CSV (comma-separated) based on file extension
 fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
-    // Read file as bytes and convert lossy to handle non-UTF8 characters
+    // Read file as bytes
     let bytes = std::fs::read(path)?;
-    let content = String::from_utf8_lossy(&bytes);
+    let content = BStr::new(&bytes);
 
     // Detect delimiter based on file extension
     let is_csv = path
@@ -1641,8 +1641,8 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
         .map(|e| e.to_string_lossy().to_lowercase() == "csv")
         .unwrap_or(false);
 
-    let mut prefix_to_annotation: FxHashMap<String, String> = FxHashMap::default();
-    let mut categories_set: FxHashSet<String> = FxHashSet::default();
+    let mut prefix_to_annotation: FxHashMap<BString, BString> = FxHashMap::default();
+    let mut categories_set: FxHashSet<BString> = FxHashSet::default();
     let mut is_first_line = true;
 
     for line in content.lines() {
@@ -1660,10 +1660,13 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
         }
 
         // Parse fields based on delimiter
-        let fields: Vec<String> = if is_csv {
-            parse_csv_fields(line)
+        let fields: Vec<BString> = if is_csv {
+            parse_csv_fields(line.to_str().unwrap())
+                .into_iter()
+                .map(BString::from)
+                .collect()
         } else {
-            line.split('\t').map(|s| s.to_string()).collect()
+            line.split_str("\t").map(BString::from).collect()
         };
 
         // Get prefix (column 0) and annotation (column 1)
@@ -1679,11 +1682,11 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
     }
 
     // Sort prefixes by length descending (longest match first)
-    let mut prefixes: Vec<String> = prefix_to_annotation.keys().cloned().collect();
+    let mut prefixes: Vec<BString> = prefix_to_annotation.keys().cloned().collect();
     prefixes.sort_by_key(|b| std::cmp::Reverse(b.len()));
 
     // Sort categories alphabetically for consistent ordering, but put "NA" last
-    let mut categories: Vec<String> = categories_set.into_iter().collect();
+    let mut categories: Vec<BString> = categories_set.into_iter().collect();
     categories.sort_by(|a, b| match (a.as_str(), b.as_str()) {
         ("NA", "NA") => std::cmp::Ordering::Equal,
         ("NA", _) => std::cmp::Ordering::Greater,
@@ -1693,7 +1696,7 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
 
     // Assign colors to categories
     let total = categories.len();
-    let category_colors: FxHashMap<String, (u8, u8, u8)> = categories
+    let category_colors: FxHashMap<BString, (u8, u8, u8)> = categories
         .iter()
         .enumerate()
         .map(|(i, cat)| (cat.clone(), get_annotation_color(i, total)))
