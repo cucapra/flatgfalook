@@ -458,46 +458,6 @@ struct Args {
     verbose: u8,
 }
 
-/// A segment (node) in the graph
-#[derive(Debug, Clone)]
-struct Segment {
-    sequence_len: u64,
-    n_count: u64, // Number of uncalled bases (N's) in the sequence
-}
-
-/// An edge between two segments
-#[derive(Debug, Clone)]
-struct Edge {
-    from_id: u64,
-    from_rev: bool,
-    to_id: u64,
-    to_rev: bool,
-}
-
-/// A step in a path: (segment_id, is_reverse)
-#[derive(Debug, Clone)]
-struct PathStep {
-    segment_id: u64,
-    is_reverse: bool,
-}
-
-/// A path through the graph
-#[derive(Debug, Clone)]
-struct GfaPath {
-    name: String,
-    steps: Vec<PathStep>,
-}
-
-/// Minimal graph representation for visualization
-struct Graph {
-    segments: Vec<Segment>,
-    segment_name_to_id: FxHashMap<String, u64>,
-    segment_offsets: Vec<u64>,
-    total_length: u64,
-    paths: Vec<GfaPath>,
-    edges: Vec<Edge>,
-}
-
 /// Canonical edge key for deduplication
 fn edge_key(from_id: u64, from_rev: bool, to_id: u64, to_rev: bool) -> (u64, bool, u64, bool) {
     // Normalize edge direction for deduplication
@@ -505,19 +465,6 @@ fn edge_key(from_id: u64, from_rev: bool, to_id: u64, to_rev: bool) -> (u64, boo
         (from_id, from_rev, to_id, to_rev)
     } else {
         (to_id, !to_rev, from_id, !from_rev)
-    }
-}
-
-impl Graph {
-    fn new() -> Self {
-        Graph {
-            segments: Vec::new(),
-            segment_name_to_id: FxHashMap::default(),
-            segment_offsets: Vec::new(),
-            total_length: 0,
-            paths: Vec::new(),
-            edges: Vec::new(),
-        }
     }
 }
 
