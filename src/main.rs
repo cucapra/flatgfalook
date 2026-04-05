@@ -11,7 +11,7 @@ use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
 use bstr::{BStr, BString};
-use flatgfa::{flatgfa::{FlatGFA, HeapGFAStore}, pool::{Id, Pool}, memfile};
+use flatgfa::{flatgfa::{FlatGFA, HeapGFAStore, Orientation}, pool::{Id, Pool}, memfile};
 
 #[derive(Parser)]
 #[command(name = "gfalook")]
@@ -6376,25 +6376,26 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     // Render edges as SVG paths (offset by x-axis height if present)
     let edge_base_y = path_space_with_gap + axis_total_height;
 
-    for edge in &graph.edges {
-        let from_id = edge.from_id as usize;
-        let to_id = edge.to_id as usize;
+    for edge in graph.links.all() {
+        let from_id = edge.from.segment();
+        let to_id = edge.to.segment();
 
-        if from_id < graph.segs.len() && to_id < graph.segs.len() {
+        // if from_id < graph.segs.len() && to_id < graph.segs.len() {
+        // TODO(adrian): Removing this bounds check because it is impossible "by
+        // construction" in FlatGFA.
+        if true {
             let from_offset = graph.segment_offsets[from_id];
-            let from_len = graph.segs[from_id].sequence_len;
+            let from_len = graph.segs[from_id].len();
             let to_offset = graph.segment_offsets[to_id];
 
-            let a_pos = if edge.from_rev {
-                from_offset as f64 / bin_width
-            } else {
-                (from_offset + from_len) as f64 / bin_width
+            let a_pos = match edge.from.orient() {
+                Orientation::Backward => from_offset as f64 / bin_width,
+                Orientation::Forward => (from_offset + from_len) as f64 / bin_width,
             };
 
-            let b_pos = if edge.to_rev {
-                (to_offset + graph.segs[to_id].sequence_len) as f64 / bin_width
-            } else {
-                to_offset as f64 / bin_width
+            let b_pos = match edge.to.orient() {
+                Orientation::Backward => (to_offset + graph.segs[to_id].len()) as f64 / bin_width,
+                Orientation::Forward => to_offset as f64 / bin_width,
             };
 
             let (a, b) = if a_pos < b_pos {
