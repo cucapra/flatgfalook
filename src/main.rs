@@ -11,7 +11,7 @@ use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
 use bstr::{BStr, BString};
-use flatgfa::{flatgfa::{FlatGFA, HeapGFAStore}, pool::Id, memfile};
+use flatgfa::{flatgfa::{FlatGFA, HeapGFAStore}, pool::{Id, Pool}, memfile};
 
 #[derive(Parser)]
 #[command(name = "gfalook")]
@@ -3295,6 +3295,16 @@ fn get_path_name<'a>(graph: &'a FlatGFA<'a>, path: Id<flatgfa::Path>) -> &'a BSt
     graph.get_path_name(&graph.paths[path])
 }
 
+/**
+ * Get a Vec of all the IDs available in a pool.
+ *
+ * TODO(adrian): Everywhere this occurs is an efficiency smell. But let's not
+ * fix that for now.
+ */
+fn pool_all_ids<T>(pool: Pool<T>) -> Vec<Id<T>> {
+    (0..pool.len()).map(Id::new).collect()
+}
+
 fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
@@ -3303,10 +3313,10 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     }
     // Note: compressed_mode conflicts with cluster_paths and prefix_merges are handled by clap
 
-    let mut display_paths: Vec<Id<flatgfa::Path>> = (0..graph.paths.len()).map(Id::new).collect();
+    let mut display_paths: Vec<Id<flatgfa::Path>> = pool_all_ids(graph.paths);
 
     if let Some(ref prefix) = args.ignore_prefix {
-        display_paths.retain(|p| graph.get_path_name(&graph.paths[*p]).starts_with(prefix.as_bytes()));
+        display_paths.retain(|p| get_path_name(graph, *p).starts_with(prefix.as_bytes()));
     }
 
     if let Some(ref ptd_file) = args.paths_to_display {
@@ -3479,7 +3489,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
     // Load prefix grouping if specified (PNG) - must be after clustering check
     let path_grouping: Option<PathGrouping> = args.prefix_merges.as_ref().and_then(|p| {
-        let paths_vec: Vec<GfaPath> = display_paths.iter().map(|&p| p.clone()).collect();
+        let paths_vec: Vec<Id<flatgfa::Path>> = display_paths.iter().map(|&p| p.clone()).collect();
         match load_prefix_merges(p, &paths_vec) {
             Ok(grouping) => {
                 info!(
@@ -4968,7 +4978,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         std::process::exit(1);
     }
 
-    let mut display_paths: Vec<&GfaPath> = graph.paths.all().iter().collect();
+    let mut display_paths: Vec<Id<flatgfa::Path>> = pool_all_ids(graph.paths);
 
     if let Some(ref prefix) = args.ignore_prefix {
         display_paths.retain(|p| !p.name.starts_with(prefix));
