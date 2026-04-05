@@ -3478,9 +3478,9 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         };
 
         // Write cluster assignments to TSV (using original result for clustered paths only)
-        write_cluster_tsv(&args.out, &display_paths[..num_clustered], &result);
+        write_cluster_tsv(graph, &args.out, &display_paths[..num_clustered], &result);
         // Write medoids TSV
-        write_medoids_tsv(&args.out, &original_paths, &result);
+        write_medoids_tsv(graph, &args.out, &original_paths, &result);
 
         // Filter to representatives only if requested (PNG)
         // Note: only applies to clustered paths, unclustered paths are not included
@@ -4906,6 +4906,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
 /// Write clustering results to a TSV file
 fn write_cluster_tsv(
+    graph: &FlatGFA,
     output_path: &Path,
     display_paths: &[Id<flatgfa::Path>],
     cluster_result: &ClusteringResult,
@@ -4927,6 +4928,7 @@ fn write_cluster_tsv(
 
 /// Write cluster medoids (representatives) to a TSV file
 fn write_medoids_tsv(
+    graph: &FlatGFA,
     output_path: &Path,
     original_paths: &[Id<flatgfa::Path>],
     cluster_result: &ClusteringResult,
@@ -5159,9 +5161,9 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         };
 
         // Write cluster assignments to TSV (using original result for clustered paths only)
-        write_cluster_tsv(&args.out, &display_paths[..num_clustered], &result);
+        write_cluster_tsv(graph, &args.out, &display_paths[..num_clustered], &result);
         // Write medoids TSV
-        write_medoids_tsv(&args.out, &original_paths, &result);
+        write_medoids_tsv(graph, &args.out, &original_paths, &result);
 
         // Filter to representatives only if requested (SVG)
         // Note: only applies to clustered paths, unclustered paths are not included
