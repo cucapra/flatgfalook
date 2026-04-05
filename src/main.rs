@@ -2305,12 +2305,10 @@ fn cluster_paths_by_similarity(
             total_bp[*i],
             total_bp[*j],
         );
-        /* TODO(adrian): Disabling debug stuff.
         debug!(
             "EDR: {} vs {} = {:.6} (jaccard={:.6}, bp_a={}, bp_b={})",
-            paths[*i].name, paths[*j].name, edr, jaccard, total_bp[*i], total_bp[*j]
+            get_path_name(graph, paths[*i]), get_path_name(graph, paths[*j]), edr, jaccard, total_bp[*i], total_bp[*j]
         );
-        */
     }
 
     // Build normalized distance matrix (like cosigt: normRegularMatrix <- regularMatrix / maxD)
