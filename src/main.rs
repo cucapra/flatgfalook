@@ -5089,13 +5089,13 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             display_paths.len()
         );
         // Build segment lengths vector for EDR computation
-        let segment_lengths: Vec<u64> = graph.segs.iter().map(|s| s.len() as u64).collect();
+        let segment_lengths: Vec<u64> = graph.segs.all().iter().map(|s| s.len() as u64).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
         let (paths_to_cluster, unclustered_paths): (Vec<Id<flatgfa::Path>>, Vec<Id<flatgfa::Path>>) =
             if let Some(ref bed) = bed_regions {
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.iter().partition(|p| bed.has_regions(&get_path_name(graph, *p)));
+                    display_paths.iter().partition(|p| bed.has_regions(&get_path_name(graph, **p)));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
