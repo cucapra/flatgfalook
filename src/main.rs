@@ -5055,7 +5055,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // Calculate width needed so smallest segment gets node_width pixels
         // bin_width = total_length / viz_width, we want bin_width <= min_seg_len / node_width
         // So viz_width >= total_length * node_width / min_seg_len
-        let min_width = ((len_to_visualize * args.node_width as u64) / min_seg_len as u64) as u32;
+        let min_width = ((len_to_visualize as u32) * args.node_width) / min_seg_len;
 
         debug!(
             "show_all_nodes: min_seg={}bp, need {}px width for {}px/node",
