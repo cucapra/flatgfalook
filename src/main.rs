@@ -4633,7 +4633,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             let mut pangenomic_start: Option<u64> = None;
             let mut pangenomic_end: u64 = 0;
 
-            for step in graph.get_path_steps(&graph.paths[*path]) {
+            for step in graph.get_path_steps(path) {
                 let seg_id = step.segment();
                 if seg_id.index() < graph.segs.len() {
                     let seg_len = graph.segs[seg_id].len() as u64;
@@ -6297,7 +6297,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let mut pangenomic_start: Option<u64> = None;
                 let mut pangenomic_end: u64 = 0;
 
-                for step in graph.get_path_steps(&graph.paths[*path]) {
+                for step in graph.get_path_steps(path) {
                     let seg_id = step.segment();
                     if seg_id.index() < graph.segs.len() {
                         let seg_len = graph.segs[seg_id].len() as u64;
@@ -6409,11 +6409,11 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
             let a_pos = match edge.from.orient() {
                 Orientation::Backward => from_offset as f64 / bin_width,
-                Orientation::Forward => (from_offset + from_len) as f64 / bin_width,
+                Orientation::Forward => (from_offset + (from_len as u64)) as f64 / bin_width,
             };
 
             let b_pos = match edge.to.orient() {
-                Orientation::Backward => (to_offset + graph.segs[to_id].len()) as f64 / bin_width,
+                Orientation::Backward => (to_offset + (graph.segs[to_id].len() as u64)) as f64 / bin_width,
                 Orientation::Forward => to_offset as f64 / bin_width,
             };
 
