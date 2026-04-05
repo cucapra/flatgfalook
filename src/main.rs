@@ -1646,7 +1646,7 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
     let mut is_first_line = true;
 
     for line in content.lines() {
-        let line = line.trim();
+        let line = line?.trim();
 
         // Skip empty lines
         if line.is_empty() {
@@ -1661,12 +1661,12 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
 
         // Parse fields based on delimiter
         let fields: Vec<BString> = if is_csv {
-            parse_csv_fields(line.to_str().unwrap())
+            parse_csv_fields(line)
                 .into_iter()
                 .map(BString::from)
                 .collect()
         } else {
-            line.split_str("\t").map(BString::from).collect()
+            line.split(|c| c == '\t').map(BString::from).collect()
         };
 
         // Get prefix (column 0) and annotation (column 1)
@@ -1687,7 +1687,7 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
 
     // Sort categories alphabetically for consistent ordering, but put "NA" last
     let mut categories: Vec<BString> = categories_set.into_iter().collect();
-    categories.sort_by(|a, b| match (a.as_ref(), b.as_ref()) {
+    categories.sort_by(|a, b| match (a, b) {
         (a_ref, b_ref) if a_ref == "NA" && b_ref == "NA" => std::cmp::Ordering::Equal,
         (a_ref, _) if a_ref == "NA" => std::cmp::Ordering::Greater,
         (_, b_ref) if b_ref == "NA" => std::cmp::Ordering::Less,
@@ -3329,6 +3329,7 @@ fn get_segment_n_counts(graph: &FlatGFA) -> Vec<u64> {
     graph
         .segs
         .all()
+        .iter()
         .map(|seg| {
             let seq = graph.get_seq(seg);
             seq.iter().filter(|&&b| b == b'N' || b == b'n').count() as u64
