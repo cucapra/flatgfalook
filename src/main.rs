@@ -1224,7 +1224,7 @@ fn parse_gfa(path: &PathBuf) -> std::io::Result<HeapGFAStore> {
 /// Compute SHA256-based path color (matching odgi algorithm exactly)
 fn compute_path_color(path_name: &BStr, color_by_prefix: Option<u8>) -> (u8, u8, u8) {
     let hash_input = if let Some(sep) = color_by_prefix {
-        path_name.split(sep).next().unwrap_or(path_name)
+        path_name.split(|c| *c == sep).next().unwrap_or(path_name)
     } else {
         path_name
     };
@@ -3952,7 +3952,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             let color = if let Some(ref colors) = custom_colors {
                 colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
             } else {
-                compute_path_color(get_path_name(graph, *path), args.color_by_prefix)
+                compute_path_color(get_path_name(graph, *path), args.color_by_prefix.map(|c| c as u8))
             };
 
             path_data.push(PathBinData {
@@ -4261,7 +4261,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         let (path_r, path_g, path_b) = if let Some(ref colors) = custom_colors {
             colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
         } else {
-            compute_path_color(get_path_name(graph, *path).to_str().unwrap(), args.color_by_prefix)
+            compute_path_color(get_path_name(graph, *path), args.color_by_prefix.map(|c| c as u8))
         };
 
         // Render path name (only once per group) - PNG normal paths
@@ -5656,7 +5656,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             let color = if let Some(ref colors) = custom_colors {
                 colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
             } else {
-                compute_path_color(get_path_name(graph, *path).to_str().unwrap(), args.color_by_prefix)
+                compute_path_color(get_path_name(graph, *path), args.color_by_prefix.map(|c| c as u8))
             };
 
             path_data.push(PathBinDataSvg {
@@ -5932,7 +5932,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let (path_r, path_g, path_b) = if let Some(ref colors) = custom_colors {
             colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
         } else {
-            compute_path_color(get_path_name(graph, *path).to_str().unwrap(), args.color_by_prefix)
+            compute_path_color(get_path_name(graph, *path), args.color_by_prefix.map(|c| c as u8))
         };
 
         // Render path name (full name, vector font) - only once per group
