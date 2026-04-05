@@ -3783,7 +3783,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         let mut aggregated_bins: FxHashMap<usize, (f64, u32)> = FxHashMap::default(); // (sum_depth, count)
 
         for path in display_paths.iter() {
-            for step in graph.get_path_steps(path) {
+            for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
                     let offset = segment_offsets[seg_id];
@@ -3881,7 +3881,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             let mut max_bin = 0usize;
 
             let mut path_pos: u64 = 0;
-            for step in graph.get_path_steps(path) {
+            for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
                     let offset = segment_offsets[seg_id];
@@ -4331,7 +4331,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         };
 
         let mut path_pos: u64 = 0; // Track position within path
-        for step in graph.get_path_steps(path) {
+        for step in graph.get_path_steps(&graph.paths[*path]) {
             let seg_id = step.segment_id as usize;
             if seg_id < graph.segs.len() {
                 let offset = segment_offsets[seg_id];
@@ -4619,7 +4619,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             let mut pangenomic_start: Option<u64> = None;
             let mut pangenomic_end: u64 = 0;
 
-            for step in graph.get_path_steps(path) {
+            for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
                     let seg_len = graph.segs[seg_id].sequence_len;
@@ -5466,7 +5466,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let mut aggregated_bins: FxHashMap<usize, f64> = FxHashMap::default();
 
         for path in display_paths.iter() {
-            for step in graph.get_path_steps(path) {
+            for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
                     let offset = segment_offsets[seg_id];
@@ -5576,7 +5576,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             let mut max_bin = 0usize;
 
             let mut path_pos: u64 = 0;
-            for step in graph.get_path_steps(path) {
+            for step in graph.get_path_steps(&graph.paths[*path]) {
                 let seg_id = step.segment_id as usize;
                 if seg_id < graph.segs.len() {
                     let offset = segment_offsets[seg_id];
@@ -5963,7 +5963,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         };
 
         let mut path_pos: u64 = 0; // Track position within path
-        for step in graph.get_path_steps(path) {
+        for step in graph.get_path_steps(&graph.paths[*path]) {
             let seg_id = step.segment_id as usize;
             if seg_id < graph.segs.len() {
                 let offset = segment_offsets[seg_id];
@@ -6274,7 +6274,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let mut pangenomic_start: Option<u64> = None;
                 let mut pangenomic_end: u64 = 0;
 
-                for step in graph.get_path_steps(path) {
+                for step in graph.get_path_steps(&graph.paths[*path]) {
                     let seg_id = step.segment_id as usize;
                     if seg_id < graph.segs.len() {
                         let seg_len = graph.segs[seg_id].sequence_len;
