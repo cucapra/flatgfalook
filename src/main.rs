@@ -1222,7 +1222,7 @@ fn parse_gfa(path: &PathBuf) -> std::io::Result<HeapGFAStore> {
 }
 
 /// Compute SHA256-based path color (matching odgi algorithm exactly)
-fn compute_path_color(path_name: &str, color_by_prefix: Option<char>) -> (u8, u8, u8) {
+fn compute_path_color(path_name: &BStr, color_by_prefix: Option<u8>) -> (u8, u8, u8) {
     let hash_input = if let Some(sep) = color_by_prefix {
         path_name.split(sep).next().unwrap_or(path_name)
     } else {
@@ -1230,7 +1230,7 @@ fn compute_path_color(path_name: &str, color_by_prefix: Option<char>) -> (u8, u8
     };
 
     let mut hasher = Sha256::new();
-    hasher.update(hash_input.as_bytes());
+    hasher.update(hash_input);
     let result = hasher.finalize();
 
     let path_r = result[24];
@@ -1688,10 +1688,10 @@ fn load_annotations(path: &PathBuf) -> std::io::Result<AnnotationData> {
     // Sort categories alphabetically for consistent ordering, but put "NA" last
     let mut categories: Vec<BString> = categories_set.into_iter().collect();
     categories.sort_by(|a, b| match (a.as_ref(), b.as_ref()) {
-        ("NA", "NA") => std::cmp::Ordering::Equal,
-        ("NA", _) => std::cmp::Ordering::Greater,
-        (_, "NA") => std::cmp::Ordering::Less,
-        _ => a.cmp(b),
+        (a_ref, b_ref) if a_ref == "NA" && b_ref == "NA" => std::cmp::Ordering::Equal,
+        (a_ref, _) if a_ref == "NA" => std::cmp::Ordering::Greater,
+        (_, b_ref) if b_ref == "NA" => std::cmp::Ordering::Less,
+        (a_ref, b_ref) => a_ref.cmp(b_ref),
     });
 
     // Assign colors to categories
@@ -3291,7 +3291,7 @@ fn get_depth_color(
 
 /// Get the total number of base pairs in all segments in a graph.
 fn graph_total_length(graph: &FlatGFA) -> usize {
-   graph.segs.iter().map(|s| s.len()).sum()
+   graph.segs.all().iter().map(|s| s.len()).sum()
 }
 
 /// Get the name of a path in a graph.
@@ -3405,7 +3405,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             display_paths.len()
         );
         // Build segment lengths vector for EDR computation
-        let segment_lengths: Vec<u64> = graph.segs.iter().map(|s| s.len() as u64).collect();
+        let segment_lengths: Vec<u64> = graph.segs.all().iter().map(|s| s.len() as u64).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
         let (paths_to_cluster, unclustered_paths): (Vec<Id<flatgfa::Path>>, Vec<Id<flatgfa::Path>>) =
@@ -3922,7 +3922,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
                         let entry = bins.entry(curr_bin).or_default();
                         entry.mean_depth += 1.0;
-                        if step.orient().is_backward() {
+                        if step.orient() == Orientation::Backward {
                             entry.mean_inv += 1.0;
                         }
                         entry.mean_pos += path_pos as f64;
@@ -3950,9 +3950,9 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             }
 
             let color = if let Some(ref colors) = custom_colors {
-                colors.get(&get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
+                colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
             } else {
-                compute_path_color(&get_path_name(graph, *path), args.color_by_prefix)
+                compute_path_color(get_path_name(graph, *path), args.color_by_prefix)
             };
 
             path_data.push(PathBinData {
@@ -4065,7 +4065,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                     let apply_strand = args
                         .alignment_prefix
                         .as_ref()
-                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
                     if apply_strand {
                         if bin_info.mean_inv > 0.5 {
                             (200, 50, 50)
@@ -4084,7 +4084,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                     let apply_darkness = args
                         .alignment_prefix
                         .as_ref()
-                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
                     if apply_darkness && darkness_length > 0 {
                         let pos_factor = bin_info.mean_pos / darkness_length as f64;
                         let darkness = if bin_info.mean_inv > 0.5 {
@@ -4259,9 +4259,9 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         }
 
         let (path_r, path_g, path_b) = if let Some(ref colors) = custom_colors {
-            colors.get(&get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
+            colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
         } else {
-            compute_path_color(&get_path_name(graph, *path), args.color_by_prefix)
+            compute_path_color(get_path_name(graph, *path).to_str().unwrap(), args.color_by_prefix)
         };
 
         // Render path name (only once per group) - PNG normal paths
@@ -4368,7 +4368,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                     let curr_bin = (pos as f64 / bin_width) as usize;
                     let entry = bins.entry(curr_bin).or_default();
                     entry.mean_depth += 1.0;
-                    if step.orient().is_backward() {
+                    if step.orient() == Orientation::Backward {
                         entry.mean_inv += 1.0;
                     }
                     entry.mean_pos += path_pos as f64;
@@ -4423,7 +4423,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 let apply_strand = args
                     .alignment_prefix
                     .as_ref()
-                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
 
                 if apply_strand {
                     if bin_info.mean_inv > 0.5 {
@@ -4444,7 +4444,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 let apply_darkness = args
                     .alignment_prefix
                     .as_ref()
-                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
 
                 if apply_darkness && darkness_length > 0 {
                     // Calculate darkness factor based on position
@@ -4627,7 +4627,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         // Also calculate pixel range where the path actually appears
         let (coord_start, coord_end, pixel_start, pixel_end) = if is_pangenomic {
             (0u64, len_to_visualize, 0u32, viz_width)
-        } else if let Some(path) = graph.paths.iter().find(|p| graph.get_path_name(p) == *coord_system) {
+        } else if let Some(path) = graph.paths.all().iter().find(|p| graph.get_path_name(p) == *coord_system) {
             // Calculate path length and pangenomic positions from its steps
             let mut path_len: u64 = 0;
             let mut pangenomic_start: Option<u64> = None;
@@ -5019,13 +5019,13 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
     if let Some(ref ptd_file) = args.paths_to_display {
         if let Ok(ptd) = load_paths_to_display(ptd_file) {
-            let ptd_set: std::collections::HashSet<_> = ptd.iter().collect();
-            display_paths.retain(|p| ptd_set.contains(&get_path_name(graph, *p)));
+            let ptd_set: std::collections::HashSet<&BStr> = ptd.iter().map(|s| s.as_ref()).collect();
+            display_paths.retain(|p| ptd_set.contains(get_path_name(graph, *p)));
             let path_map: FxHashMap<&BStr, Id<flatgfa::Path>> =
-                display_paths.iter().map(|p| (&get_path_name(graph, *p), *p)).collect();
+                display_paths.iter().map(|p| (get_path_name(graph, *p), *p)).collect();
             display_paths = ptd
                 .iter()
-                .filter_map(|name| path_map.get(name).copied())
+                .filter_map(|name| path_map.get(name.as_ref()).copied())
                 .collect();
         }
     }
@@ -5038,8 +5038,8 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     let viz_width = if args.show_all_nodes {
         // Find the smallest segment length
         let min_seg_len = graph
-            .segments
-            .iter()
+            .segs
+            .all().iter()
             .map(|s| s.len() as u64)
             .filter(|&len| len > 0)
             .min()
@@ -5613,7 +5613,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
                         let entry = bins.entry(curr_bin).or_default();
                         entry.mean_depth += 1.0;
-                        if step.orient().is_backward() {
+                        if step.orient() == Orientation::Backward {
                             entry.mean_inv += 1.0;
                         }
                         entry.mean_pos += path_pos as f64;
@@ -5641,9 +5641,9 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             }
 
             let color = if let Some(ref colors) = custom_colors {
-                colors.get(&get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
+                colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
             } else {
-                compute_path_color(&get_path_name(graph, *path), args.color_by_prefix)
+                compute_path_color(get_path_name(graph, *path).to_str().unwrap(), args.color_by_prefix)
             };
 
             path_data.push(PathBinDataSvg {
@@ -5744,7 +5744,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                     let apply_strand = args
                         .alignment_prefix
                         .as_ref()
-                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
                     if apply_strand {
                         if bin_info.mean_inv > 0.5 {
                             (200, 50, 50)
@@ -5762,7 +5762,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                     let apply_darkness = args
                         .alignment_prefix
                         .as_ref()
-                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                        .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
                     if apply_darkness && darkness_length > 0 {
                         let pos_factor = bin_info.mean_pos / darkness_length as f64;
                         let darkness = if bin_info.mean_inv > 0.5 {
@@ -5917,9 +5917,9 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         }
 
         let (path_r, path_g, path_b) = if let Some(ref colors) = custom_colors {
-            colors.get(&get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
+            colors.get(get_path_name(graph, *path)).copied().unwrap_or((200, 200, 200)) // Light grey for non-specified paths
         } else {
-            compute_path_color(&get_path_name(graph, *path), args.color_by_prefix)
+            compute_path_color(get_path_name(graph, *path).to_str().unwrap(), args.color_by_prefix)
         };
 
         // Render path name (full name, vector font) - only once per group
@@ -5996,7 +5996,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                     let curr_bin = (pos as f64 / bin_width) as usize;
                     let entry = bins.entry(curr_bin).or_default();
                     entry.mean_depth += 1.0;
-                    if step.orient().is_backward() {
+                    if step.orient() == Orientation::Backward {
                         entry.mean_inv += 1.0;
                     }
                     entry.mean_pos += path_pos as f64;
@@ -6057,7 +6057,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let apply_strand = args
                     .alignment_prefix
                     .as_ref()
-                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
 
                 if apply_strand {
                     if bin_info.mean_inv > 0.5 {
@@ -6077,7 +6077,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let apply_darkness = args
                     .alignment_prefix
                     .as_ref()
-                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix));
+                    .is_none_or(|prefix| get_path_name(graph, *path).starts_with(prefix.as_bytes()));
 
                 if apply_darkness && darkness_length > 0 {
                     let pos_factor = bin_info.mean_pos / darkness_length as f64;
@@ -6278,7 +6278,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             (0u64, len_to_visualize, 0.0f64, viz_width as f64)
         } else {
             // Find the path with the specified name
-            if let Some(path) = graph.paths.iter().find(|p| graph.get_path_name(p) == *coord_system) {
+            if let Some(path) = graph.paths.all().iter().find(|p| graph.get_path_name(p) == *coord_system) {
                 // Calculate path length and pangenomic positions from its steps
                 let mut path_len: u64 = 0;
                 let mut pangenomic_start: Option<u64> = None;
