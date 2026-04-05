@@ -3699,19 +3699,19 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // Filter annotation categories to only those used by paths in the graph (for legend)
     // NA is added at the end if any path doesn't match a prefix
     let filtered_categories: Vec<String> = if let Some(ref ann) = annotations {
-        let used_categories: std::collections::HashSet<&str> = display_paths
+        let used_categories: std::collections::HashSet<&BStr> = display_paths
             .iter()
             .map(|p| ann.get_annotation(get_path_name(graph, *p)))
             .collect();
-        let mut cats: Vec<String> = ann
+        let mut cats: Vec<BString> = ann
             .categories
             .iter()
-            .filter(|c| used_categories.contains(c.as_str()))
+            .filter(|c| used_categories.contains(c.as_ref()))
             .cloned()
             .collect();
         // Add NA at the end if any path has it
-        if used_categories.contains("NA") && !cats.iter().any(|c| c == "NA") {
-            cats.push("NA".to_string());
+        if used_categories.contains("NA".into()) && !cats.iter().any(|c| c == "NA") {
+            cats.push("NA".into());
         }
         cats
     } else {
