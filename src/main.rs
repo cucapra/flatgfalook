@@ -4198,10 +4198,10 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 let size = cr.cluster_sizes[cluster_id];
                 format!("{} (n={})", base_name, size)
             } else {
-                base_name
+                base_name.to_string()
             }
         } else {
-            base_name
+            base_name.to_string()
         };
 
         // Add gap before new cluster (except first)
@@ -4884,12 +4884,19 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
     // Render annotation legend at the top using full image width (PNG)
     if let Some(ref ann) = annotations {
+        let categories_str: Vec<String> = filtered_categories.iter().map(|c| c.to_string()).collect();
+        // TODO(adrian): Inefficient conversion.
+        let colors_str: FxHashMap<String, (u8, u8, u8)> = ann
+            .category_colors
+            .iter()
+            .map(|(k, v)| (k.to_string(), *v))
+            .collect();
         render_annotation_legend_png(
             &mut buffer,
             total_width,
             0, // legend starts at left edge
-            &filtered_categories,
-            &ann.category_colors,
+            &categories_str,
+            &colors_str,
             legend_height,
             char_size,
         );
@@ -5427,24 +5434,30 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     if let Some(ref ann) = annotations {
         // Filter categories to only those used by paths in the graph
         // NA is added at the end if any path doesn't match a prefix
-        let used_categories: std::collections::HashSet<&str> = display_paths
+        let used_categories: std::collections::HashSet<&BStr> = display_paths
             .iter()
             .map(|p| ann.get_annotation(get_path_name(graph, *p)))
             .collect();
         let mut filtered_categories: Vec<String> = ann
             .categories
             .iter()
-            .filter(|c| used_categories.contains(c.as_str()))
-            .cloned()
+            .filter(|c| used_categories.contains(c.as_ref()))
+            .map(|c| c.to_string())
             .collect();
         // Add NA at the end if any path has it
-        if used_categories.contains("NA") && !filtered_categories.iter().any(|c| c == "NA") {
+        if used_categories.contains(BStr::new("NA")) && !filtered_categories.iter().any(|c| c == "NA") {
             filtered_categories.push("NA".to_string());
         }
 
+        // TODO(adrian): Inefficient conversion.
+        let colors_str: FxHashMap<String, (u8, u8, u8)> = ann
+            .category_colors
+            .iter()
+            .map(|(k, v)| (k.to_string(), *v))
+            .collect();
         let legend_svg = render_annotation_legend_svg(
             &filtered_categories,
-            &ann.category_colors,
+            &colors_str,
             total_width,
             legend_height,
             font_size,
@@ -5869,10 +5882,10 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let size = cr.cluster_sizes[cluster_id];
                 format!("{} (n={})", base_name, size)
             } else {
-                base_name
+                base_name.to_string()
             }
         } else {
-            base_name
+            base_name.to_string()
         };
 
         // Add gap before new cluster (except first)
