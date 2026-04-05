@@ -3281,6 +3281,13 @@ fn get_depth_color(
     }
 }
 
+/**
+ * Get the total number of base pairs in all segments in a graph.
+ */
+fn graph_total_length(graph: &FlatGFA) -> usize {
+   graph.segs.all().iter().map(|s| s.len()).sum()
+}
+
 fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // Check for conflicting options
     if args.cluster_paths && args.prefix_merges.is_some() {
@@ -3311,10 +3318,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     let pix_per_path = args.path_height;
     let bottom_padding = 5u32;
 
-    // TODO(adrian): Maybe this should go in a function.
-    let total_length: usize = graph.segs.all().iter().map(|s| s.len()).sum();
-
-    let len_to_visualize = total_length;
+    let len_to_visualize = graph_total_length(graph);
     let viz_width = args.width.min(len_to_visualize as u32);
 
     let bin_width = args
@@ -4978,7 +4982,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
     let pix_per_path = args.path_height;
 
-    let len_to_visualize = graph.total_length;
+    let len_to_visualize = graph_total_length(graph);
 
     // Calculate width - if show_all_nodes, ensure smallest segment gets at least node_width pixels
     let viz_width = if args.show_all_nodes {
