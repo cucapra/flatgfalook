@@ -1557,13 +1557,13 @@ fn load_clustering_bed(path: &PathBuf) -> std::io::Result<ClusteringBedRegions> 
 /// Annotation data loaded from TSV file
 struct AnnotationData {
     /// Map from prefix to annotation category
-    prefix_to_annotation: FxHashMap<String, String>,
+    prefix_to_annotation: FxHashMap<BString, BString>,
     /// Ordered list of prefixes (sorted by length descending for longest-match-first)
-    prefixes: Vec<String>,
+    prefixes: Vec<BString>,
     /// Ordered list of unique categories (sorted alphabetically)
-    categories: Vec<String>,
+    categories: Vec<BString>,
     /// Map from category name to assigned color
-    category_colors: FxHashMap<String, (u8, u8, u8)>,
+    category_colors: FxHashMap<BString, (u8, u8, u8)>,
 }
 /// Parse a CSV line handling quoted fields that may contain commas
 fn parse_csv_fields(line: &str) -> Vec<String> {
@@ -1601,19 +1601,19 @@ const NA_COLOR: (u8, u8, u8) = (180, 180, 180);
 impl AnnotationData {
     /// Find annotation for a path by matching against prefixes (longest match wins)
     /// Returns "NA" for paths that don't match any prefix
-    fn get_annotation(&self, path_name: &str) -> &str {
+    fn get_annotation(&self, path_name: &BStr) -> &BStr {
         for prefix in &self.prefixes {
             if path_name.starts_with(prefix) {
                 if let Some(ann) = self.prefix_to_annotation.get(prefix) {
-                    return ann.as_str();
+                    return ann.as_ref();
                 }
             }
         }
-        "NA"
+        "NA".into()
     }
 
     /// Get color for a category (grey for NA, palette color for others)
-    fn get_color(&self, category: &str) -> (u8, u8, u8) {
+    fn get_color(&self, category: &bstr) -> (u8, u8, u8) {
         if category == "NA" {
             NA_COLOR
         } else {
