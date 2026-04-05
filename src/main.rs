@@ -1346,22 +1346,26 @@ struct PathGrouping {
     /// For each original path index, the group index (-1 if not grouped)
     path_to_group: Vec<i64>,
     /// List of valid prefixes (group names)
-    prefixes: Vec<String>,
+    prefixes: Vec<BString>,
     /// Number of groups
     num_groups: usize,
 }
 
 /// Load prefixes and create path groupings
-fn load_prefix_merges(path: &PathBuf, paths: &[GfaPath]) -> std::io::Result<PathGrouping> {
+fn load_prefix_merges(
+    graph: &FlatGFA,
+    path: &PathBuf,
+    paths: &[Id<flatgfa::Path>],
+) -> std::io::Result<PathGrouping> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
-    let mut prefixes_tmp: Vec<String> = Vec::new();
-    let mut seen: FxHashSet<String> = FxHashSet::default();
+    let mut prefixes_tmp: Vec<BString> = Vec::new();
+    let mut seen: FxHashSet<BString> = FxHashSet::default();
 
     // Read all prefixes from file
     for line in reader.lines() {
         let line = line?;
-        let line = line.trim().to_string();
+        let line = BString::from(line.trim());
         if !line.is_empty() {
             if seen.contains(&line) {
                 eprintln!("[gfalook] warning: duplicate prefix found: {}", line);
@@ -1373,15 +1377,16 @@ fn load_prefix_merges(path: &PathBuf, paths: &[GfaPath]) -> std::io::Result<Path
     }
 
     let mut path_to_group: Vec<i64> = vec![-1; paths.len()];
-    let mut prefixes: Vec<String> = Vec::new();
+    let mut prefixes: Vec<BString> = Vec::new();
 
     // Assign each path to a group based on matching prefix
     for (path_idx, gfa_path) in paths.iter().enumerate() {
         let mut found = false;
+        let path_name = get_path_name(graph, *gfa_path);
 
         // First search in already validated prefixes
         for (group_idx, prefix) in prefixes.iter().enumerate() {
-            if gfa_path.name.starts_with(prefix) {
+            if path_name.starts_with(prefix) {
                 path_to_group[path_idx] = group_idx as i64;
                 found = true;
                 break;
@@ -1391,7 +1396,7 @@ fn load_prefix_merges(path: &PathBuf, paths: &[GfaPath]) -> std::io::Result<Path
         // If not found, search in all read prefixes
         if !found {
             for prefix in &prefixes_tmp {
-                if gfa_path.name.starts_with(prefix) {
+                if path_name.starts_with(prefix) {
                     let group_idx = prefixes.len();
                     prefixes.push(prefix.clone());
                     path_to_group[path_idx] = group_idx as i64;
@@ -3489,8 +3494,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
 
     // Load prefix grouping if specified (PNG) - must be after clustering check
     let path_grouping: Option<PathGrouping> = args.prefix_merges.as_ref().and_then(|p| {
-        let paths_vec: Vec<Id<flatgfa::Path>> = display_paths.iter().map(|&p| p.clone()).collect();
-        match load_prefix_merges(p, &paths_vec) {
+        match load_prefix_merges(graph, p, &display_paths) {
             Ok(grouping) => {
                 info!(
                     "Read {} valid prefixes for {} groups",
@@ -3552,13 +3556,13 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         let suffix_len = format!(" (n={})", max_size).len();
         display_paths
             .iter()
-            .map(|p| p.name.len() + suffix_len)
+            .map(|p| get_path_name(graph, *p).len() + suffix_len)
             .max()
             .unwrap_or(10)
     } else {
         display_paths
             .iter()
-            .map(|p| p.name.len())
+            .map(|p| get_path_name(graph, *p).len())
             .max()
             .unwrap_or(10)
     };
@@ -3633,7 +3637,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     // height = min(len_to_visualize, args.height + bottom_padding)
     // scale_y = height / len_to_visualize
     let height_param = (args.height + bottom_padding) as u64;
-    let edge_height = (len_to_visualize.min(height_param)) as u32;
+    let edge_height = (len_to_visualize.min(height_param.try_into().unwrap())) as u32;
     let scale_y_edges = edge_height as f64 / len_to_visualize as f64;
 
     let total_width = viz_width + path_names_width;
@@ -3686,7 +3690,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
     let filtered_categories: Vec<String> = if let Some(ref ann) = annotations {
         let used_categories: std::collections::HashSet<&str> = display_paths
             .iter()
-            .map(|p| ann.get_annotation(&p.name))
+            .map(|p| ann.get_annotation(get_path_name(graph, *p)))
             .collect();
         let mut cats: Vec<String> = ann
             .categories
@@ -5167,8 +5171,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
 
     // Load prefix grouping if specified (SVG) - must be after clustering check
     let path_grouping: Option<PathGrouping> = args.prefix_merges.as_ref().and_then(|p| {
-        let paths_vec: Vec<GfaPath> = display_paths.iter().map(|&p| p.clone()).collect();
-        match load_prefix_merges(p, &paths_vec) {
+        match load_prefix_merges(graph, p, &display_paths) {
             Ok(grouping) => {
                 info!(
                     "Read {} valid prefixes for {} groups",
@@ -5226,13 +5229,13 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let suffix_len = format!(" (n={})", max_size).len();
         display_paths
             .iter()
-            .map(|p| p.name.len() + suffix_len)
+            .map(|p| get_path_name(graph, *p).len() + suffix_len)
             .max()
             .unwrap_or(10)
     } else {
         display_paths
             .iter()
-            .map(|p| p.name.len())
+            .map(|p| get_path_name(graph, *p).len())
             .max()
             .unwrap_or(10)
     };
@@ -5284,7 +5287,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     let path_space = effective_row_count * pix_per_path;
     let bottom_padding = 5u32;
     let height_param = (args.height + bottom_padding) as u64;
-    let edge_height = (len_to_visualize.min(height_param)) as u32;
+    let edge_height = (len_to_visualize.min(height_param.try_into().unwrap())) as u32;
     let scale_y_edges = edge_height as f64 / len_to_visualize as f64;
 
     let total_width = viz_width as f64
@@ -5398,7 +5401,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         // NA is added at the end if any path doesn't match a prefix
         let used_categories: std::collections::HashSet<&str> = display_paths
             .iter()
-            .map(|p| ann.get_annotation(&p.name))
+            .map(|p| ann.get_annotation(get_path_name(graph, *p)))
             .collect();
         let mut filtered_categories: Vec<String> = ann
             .categories
