@@ -458,16 +458,6 @@ struct Args {
     verbose: u8,
 }
 
-/// Canonical edge key for deduplication
-fn edge_key(from_id: u64, from_rev: bool, to_id: u64, to_rev: bool) -> (u64, bool, u64, bool) {
-    // Normalize edge direction for deduplication
-    if from_id < to_id || (from_id == to_id && !from_rev) {
-        (from_id, from_rev, to_id, to_rev)
-    } else {
-        (to_id, !to_rev, from_id, !from_rev)
-    }
-}
-
 /// 5x8 bitmap font (matching odgi's font5x8.h)
 const FONT_5X8: [[u8; 8]; 128] = {
     let mut font = [[0u8; 8]; 128];
