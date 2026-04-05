@@ -5012,15 +5012,15 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
     let mut display_paths: Vec<Id<flatgfa::Path>> = pool_all_ids(graph.paths);
 
     if let Some(ref prefix) = args.ignore_prefix {
-        display_paths.retain(|p| !p.name.starts_with(prefix));
+        display_paths.retain(|p| !get_path_name(graph, *p).starts_with(prefix.as_bytes()));
     }
 
     if let Some(ref ptd_file) = args.paths_to_display {
         if let Ok(ptd) = load_paths_to_display(ptd_file) {
             let ptd_set: std::collections::HashSet<_> = ptd.iter().collect();
-            display_paths.retain(|p| ptd_set.contains(&p.name));
-            let path_map: FxHashMap<&String, &GfaPath> =
-                display_paths.iter().map(|p| (&p.name, *p)).collect();
+            display_paths.retain(|p| ptd_set.contains(&get_path_name(graph, *p)));
+            let path_map: FxHashMap<&BStr, Id<flatgfa::Path>> =
+                display_paths.iter().map(|p| (&get_path_name(graph, *p), *p)).collect();
             display_paths = ptd
                 .iter()
                 .filter_map(|name| path_map.get(name).copied())
@@ -5090,10 +5090,10 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let segment_lengths: Vec<u64> = graph.segs.iter().map(|s| s.len() as u64).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
-        let (paths_to_cluster, unclustered_paths): (Vec<&GfaPath>, Vec<&GfaPath>) =
+        let (paths_to_cluster, unclustered_paths): (Vec<Id<flatgfa::Path>>, Vec<Id<flatgfa::Path>>) =
             if let Some(ref bed) = bed_regions {
                 let (to_cluster, unclustered): (Vec<_>, Vec<_>) =
-                    display_paths.iter().partition(|p| bed.has_regions(&p.name));
+                    display_paths.iter().partition(|p| bed.has_regions(&get_path_name(graph, *p)));
                 if to_cluster.is_empty() {
                     eprintln!("[gfalook] error: no paths match BED regions, cannot cluster");
                     std::process::exit(1);
