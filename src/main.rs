@@ -3781,11 +3781,11 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         let mut aggregated_bins: FxHashMap<usize, (f64, u32)> = FxHashMap::default(); // (sum_depth, count)
 
         for path in display_paths.iter() {
-            for step in &path.steps {
+            for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
+                if seg_id < graph.segs.len() {
                     let offset = graph.segment_offsets[seg_id];
-                    let seg_len = graph.segments[seg_id].sequence_len;
+                    let seg_len = graph.segs[seg_id].sequence_len;
 
                     for k in 0..seg_len {
                         let pos = offset + k;
@@ -3879,12 +3879,12 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             let mut max_bin = 0usize;
 
             let mut path_pos: u64 = 0;
-            for step in &path.steps {
+            for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
+                if seg_id < graph.segs.len() {
                     let offset = graph.segment_offsets[seg_id];
-                    let seg_len = graph.segments[seg_id].sequence_len;
-                    let n_count = graph.segments[seg_id].n_count;
+                    let seg_len = graph.segs[seg_id].sequence_len;
+                    let n_count = graph.segs[seg_id].n_count;
                     let n_proportion = if seg_len > 0 {
                         n_count as f64 / seg_len as f64
                     } else {
@@ -4012,8 +4012,8 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
                 .iter()
                 .map(|step| {
                     let seg_id = step.segment_id as usize;
-                    if seg_id < graph.segments.len() {
-                        graph.segments[seg_id].sequence_len
+                    if seg_id < graph.segs.len() {
+                        graph.segs[seg_id].sequence_len
                     } else {
                         0
                     }
@@ -4315,8 +4315,8 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             .iter()
             .map(|step| {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
-                    graph.segments[seg_id].sequence_len
+                if seg_id < graph.segs.len() {
+                    graph.segs[seg_id].sequence_len
                 } else {
                     0
                 }
@@ -4329,12 +4329,12 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         };
 
         let mut path_pos: u64 = 0; // Track position within path
-        for step in &path.steps {
+        for step in graph.get_path_steps(path) {
             let seg_id = step.segment_id as usize;
-            if seg_id < graph.segments.len() {
+            if seg_id < graph.segs.len() {
                 let offset = graph.segment_offsets[seg_id];
-                let seg_len = graph.segments[seg_id].sequence_len;
-                let n_count = graph.segments[seg_id].n_count;
+                let seg_len = graph.segs[seg_id].sequence_len;
+                let n_count = graph.segs[seg_id].n_count;
                 // Proportion of N's in this segment (for uncalled base coloring)
                 let n_proportion = if seg_len > 0 {
                     n_count as f64 / seg_len as f64
@@ -4617,10 +4617,10 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             let mut pangenomic_start: Option<u64> = None;
             let mut pangenomic_end: u64 = 0;
 
-            for step in &path.steps {
+            for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
-                    let seg_len = graph.segments[seg_id].sequence_len;
+                if seg_id < graph.segs.len() {
+                    let seg_len = graph.segs[seg_id].sequence_len;
                     let seg_offset = graph.segment_offsets[seg_id];
 
                     // Track first segment's pangenomic position
@@ -4752,10 +4752,10 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
         let from_id = edge.from_id as usize;
         let to_id = edge.to_id as usize;
 
-        if from_id < graph.segments.len() && to_id < graph.segments.len() {
+        if from_id < graph.segs.len() && to_id < graph.segs.len() {
             // Get positions of from and to segments
             let from_offset = graph.segment_offsets[from_id];
-            let from_len = graph.segments[from_id].sequence_len;
+            let from_len = graph.segs[from_id].sequence_len;
             let to_offset = graph.segment_offsets[to_id];
 
             // Calculate edge endpoints based on orientation
@@ -4768,7 +4768,7 @@ fn render(args: &Args, graph: &FlatGFA) -> Vec<u8> {
             };
 
             let b_pos = if edge.to_rev {
-                (to_offset + graph.segments[to_id].sequence_len) as f64 / bin_width
+                (to_offset + graph.segs[to_id].sequence_len) as f64 / bin_width
             } else {
                 to_offset as f64 / bin_width
             };
@@ -5078,7 +5078,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             display_paths.len()
         );
         // Build segment lengths vector for EDR computation
-        let segment_lengths: Vec<u64> = graph.segments.iter().map(|s| s.sequence_len).collect();
+        let segment_lengths: Vec<u64> = graph.segs.iter().map(|s| s.sequence_len).collect();
 
         // If BED regions provided, partition paths into those to cluster vs. those excluded
         let (paths_to_cluster, unclustered_paths): (Vec<&GfaPath>, Vec<&GfaPath>) =
@@ -5470,11 +5470,11 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let mut aggregated_bins: FxHashMap<usize, f64> = FxHashMap::default();
 
         for path in display_paths.iter() {
-            for step in &path.steps {
+            for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
+                if seg_id < graph.segs.len() {
                     let offset = graph.segment_offsets[seg_id];
-                    let seg_len = graph.segments[seg_id].sequence_len;
+                    let seg_len = graph.segs[seg_id].sequence_len;
 
                     for k in 0..seg_len {
                         let pos = offset + k;
@@ -5580,12 +5580,12 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             let mut max_bin = 0usize;
 
             let mut path_pos: u64 = 0;
-            for step in &path.steps {
+            for step in graph.get_path_steps(path) {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
+                if seg_id < graph.segs.len() {
                     let offset = graph.segment_offsets[seg_id];
-                    let seg_len = graph.segments[seg_id].sequence_len;
-                    let n_count = graph.segments[seg_id].n_count;
+                    let seg_len = graph.segs[seg_id].sequence_len;
+                    let n_count = graph.segs[seg_id].n_count;
                     let n_proportion = if seg_len > 0 {
                         n_count as f64 / seg_len as f64
                     } else {
@@ -5694,8 +5694,8 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 .iter()
                 .map(|step| {
                     let seg_id = step.segment_id as usize;
-                    if seg_id < graph.segments.len() {
-                        graph.segments[seg_id].sequence_len
+                    if seg_id < graph.segs.len() {
+                        graph.segs[seg_id].sequence_len
                     } else {
                         0
                     }
@@ -5953,8 +5953,8 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             .iter()
             .map(|step| {
                 let seg_id = step.segment_id as usize;
-                if seg_id < graph.segments.len() {
-                    graph.segments[seg_id].sequence_len
+                if seg_id < graph.segs.len() {
+                    graph.segs[seg_id].sequence_len
                 } else {
                     0
                 }
@@ -5967,12 +5967,12 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         };
 
         let mut path_pos: u64 = 0; // Track position within path
-        for step in &path.steps {
+        for step in graph.get_path_steps(path) {
             let seg_id = step.segment_id as usize;
-            if seg_id < graph.segments.len() {
+            if seg_id < graph.segs.len() {
                 let offset = graph.segment_offsets[seg_id];
-                let seg_len = graph.segments[seg_id].sequence_len;
-                let n_count = graph.segments[seg_id].n_count;
+                let seg_len = graph.segs[seg_id].sequence_len;
+                let n_count = graph.segs[seg_id].n_count;
                 // Proportion of N's in this segment (for uncalled base coloring)
                 let n_proportion = if seg_len > 0 {
                     n_count as f64 / seg_len as f64
@@ -6278,10 +6278,10 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
                 let mut pangenomic_start: Option<u64> = None;
                 let mut pangenomic_end: u64 = 0;
 
-                for step in &path.steps {
+                for step in graph.get_path_steps(path) {
                     let seg_id = step.segment_id as usize;
-                    if seg_id < graph.segments.len() {
-                        let seg_len = graph.segments[seg_id].sequence_len;
+                    if seg_id < graph.segs.len() {
+                        let seg_len = graph.segs[seg_id].sequence_len;
                         let seg_offset = graph.segment_offsets[seg_id];
 
                         // Track first segment's pangenomic position
@@ -6380,9 +6380,9 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
         let from_id = edge.from_id as usize;
         let to_id = edge.to_id as usize;
 
-        if from_id < graph.segments.len() && to_id < graph.segments.len() {
+        if from_id < graph.segs.len() && to_id < graph.segs.len() {
             let from_offset = graph.segment_offsets[from_id];
-            let from_len = graph.segments[from_id].sequence_len;
+            let from_len = graph.segs[from_id].sequence_len;
             let to_offset = graph.segment_offsets[to_id];
 
             let a_pos = if edge.from_rev {
@@ -6392,7 +6392,7 @@ fn render_svg(args: &Args, graph: &FlatGFA) -> String {
             };
 
             let b_pos = if edge.to_rev {
-                (to_offset + graph.segments[to_id].sequence_len) as f64 / bin_width
+                (to_offset + graph.segs[to_id].sequence_len) as f64 / bin_width
             } else {
                 to_offset as f64 / bin_width
             };
