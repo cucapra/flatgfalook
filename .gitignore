@@ -1,2 +1,5 @@
 /target
 *.og
+*.gfa
+/bench/tests/*
+/bench/images/*
