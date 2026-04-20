@@ -15,7 +15,7 @@ import shutil
 
 # Modify these variables to avoid file conflicts and create unique command names
 results = "filesize_benchmark.txt" 
-file_test_results = "test_big_2.json"
+file_test_results = "test_big_10.json"
 test_id = "" 
 normalization_file = "normalization.toml"
 command_1 = "flatgfalook"
