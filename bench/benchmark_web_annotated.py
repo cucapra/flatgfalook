@@ -4,12 +4,18 @@ import json
 import subprocess
 from pathlib import Path
 import time
-import tomllib
+try:
+	import tomllib
+except ImportError:
+	import tomli as tomllib
+
 import gzip
+import pyzstd as zstd
 import shutil
 
 # Modify these variables to avoid file conflicts and create unique command names
 results = "filesize_benchmark.txt" 
+file_test_results = "test_big_2.json"
 test_id = "" 
 normalization_file = "normalization.toml"
 command_1 = "flatgfalook"
@@ -40,20 +46,33 @@ big_files = [hprc_dict["chrY"], hprc_dict["chr1"], hprc_dict["chr10"]]
 
 # Download a GFA file from the internet
 def download_file(target_name, web_file):
-  gzipped = False
+  print(f"Downloading {web_file} to {target_name}")
+  zip_format = None
   temp_name = ""
   if "gfa.gz" in web_file:
-    gzipped = True
-  if gzipped:
+    zip_format = "gz"
+  elif "gfa.zst" in web_file:
+    zip_format = "zst"
+  
+  if zip_format == "gz":
     temp_name = f"{target_name}.gz"
+  elif zip_format == "zst":
+    temp_name = f"{target_name}.zst"
 
   if not Path(target_name).exists():
-    if gzipped:
+    if zip_format is not None:
       subprocess.run(["curl", "-o", temp_name, web_file],
-              check = True) 
-      with gzip.open(temp_name, "rb") as f_in:
-        with open(target_name, "wb") as f_out:
-          shutil.copyfileobj(f_in, f_out)
+              check = True)
+      
+      if zip_format == "gz":
+        with gzip.open(temp_name, "rb") as f_in:
+          with open(target_name, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+      elif zip_format == "zst":
+        # print("Unzipping using zst")
+        with zstd.open(temp_name, "rb") as f_in:
+          with open(target_name, "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
       subprocess.run(["rm", "-rf", temp_name], check = True) 
     else:
       subprocess.run(["curl", "-o", target_name, web_file],
@@ -127,21 +146,45 @@ def benchmark(test_config):
   command_2_time = 0.0
   size_bytes_avg = 0
 
+  file_test_data = []
+
   # Run a test for each file in the set
   for file in test_files:
     test_file_name = f"tests/{test_config}_{i}_{test_id}.gfa"
     download_file(test_file_name, file)
-    subprocess.run(["fgfa", "-I", test_file_name, "-o", results],
-                  check = True) 
-    size_bytes_avg += os.path.getsize(results)
-    command_1_time += test(command_1, test_file_name, num_iter)
-    command_2_time += test(command_2, test_file_name, num_iter)
-    subprocess.run(["rm", "-rf", results], check = True) 
+    #subprocess.run(["fgfa", "-I", test_file_name, "-o", results],
+    #              check = True) 
+    #size_bytes_avg += os.path.getsize(results)
+    curr_file_size = os.path.getsize(test_file_name)
+    command_1_curr_time = test(command_1, test_file_name, num_iter)
+    command_2_curr_time = test(command_2, test_file_name, num_iter)
+    # subprocess.run(["rm", "-rf", results], check = True) 
+    file_results = {
+      "file": file,
+      "test_file": test_file_name,
+      "size": curr_file_size,
+      command_1: command_1_curr_time,
+      command_2: command_2_curr_time
+    }
+    json.dump(file_results, sys.stdout, indent=4)
+    file_test_data.append({
+      "file": file,
+      "test_file": test_file_name,
+      "size": curr_file_size,
+      command_1: command_1_curr_time,
+      command_2: command_2_curr_time
+    })
+    command_1_time += command_1_curr_time
+    command_2_time += command_2_curr_time 
 
     # Delete test files if flag set
     if del_cond == "del":
       subprocess.run(["rm", "-rf", test_file_name], check = True) 
     i += 1
+  
+  with open(file_test_results, "w") as f:
+    json.dump(file_test_data, f, indent=4)
+
   if (norm_cond == "norm"):
 
     # Write new normalization values
@@ -158,6 +201,7 @@ def benchmark(test_config):
     command_1_norm = data["normalization_factors"][command_1]
     command_2_norm = data["normalization_factors"][command_2]
 
+    
     # Normalize values
     command_1_time /= command_1_norm
     command_2_time /= command_2_norm

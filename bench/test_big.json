@@ -1,0 +1,23 @@
+[
+    {
+        "file": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/pggb/chroms/chrY.hprc-v1.0-pggb.gfa.gz",
+        "test_file": "tests/big_bencher_0_.gfa",
+        "size": 201896669,
+        "flatgfalook": 8274.871349334717,
+        "gfalook": 10412.556171417236
+    },
+    {
+        "file": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/pggb/chroms/chr1.hprc-v1.0-pggb.gfa.gz",
+        "test_file": "tests/big_bencher_1_.gfa",
+        "size": 7204558343,
+        "flatgfalook": 337806.19621276855,
+        "gfalook": 573975.9654998779
+    },
+    {
+        "file": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/pggb/chroms/chr10.hprc-v1.0-pggb.gfa.gz",
+        "test_file": "tests/big_bencher_2_.gfa",
+        "size": 2918902766,
+        "flatgfalook": 182849.88451004028,
+        "gfalook": 284128.3028125763
+    }
+]

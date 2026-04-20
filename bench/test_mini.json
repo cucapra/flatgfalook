@@ -1,0 +1,23 @@
+[
+    {
+        "file": "https://raw.githubusercontent.com/pangenome/odgi/master/test/LPA.gfa",
+        "test_file": "tests/mini_latency_0_.gfa",
+        "size": 1600736,
+        "flatgfalook": 92.48995780944824,
+        "gfalook": 117.71035194396973
+    },
+    {
+        "file": "https://raw.githubusercontent.com/pangenome/odgi/master/test/chr6.C4.gfa",
+        "test_file": "tests/mini_latency_1_.gfa",
+        "size": 1034521,
+        "flatgfalook": 161.52334213256836,
+        "gfalook": 193.00341606140137
+    },
+    {
+        "file": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/freeze1/pggb/chroms/chrM.hprc-v1.0-pggb.gfa.gz",
+        "test_file": "tests/mini_latency_2_.gfa",
+        "size": 295262,
+        "flatgfalook": 38.9246940612793,
+        "gfalook": 41.159868240356445
+    }
+]
