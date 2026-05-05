@@ -1,0 +1,201 @@
+[
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr13.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr13.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"13:09.04",
+"memory":24048628,
+"sys_sec":32.76,
+"usr_sec":751.90
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr14.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr14.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"11:43.47",
+"memory":22197052,
+"sys_sec":27.69,
+"usr_sec":671.86
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr15.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr15.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"10:29.04",
+"memory":20398788,
+"sys_sec":22.61,
+"usr_sec":603.27
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr16.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr16.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"9:45.26",
+"memory":16279964,
+"sys_sec":17.90,
+"usr_sec":564.69
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr17.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr17.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"9:28.26",
+"memory":14258976,
+"sys_sec":19.58,
+"usr_sec":546.30
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr18.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr18.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"9:40.96",
+"memory":18148512,
+"sys_sec":22.62,
+"usr_sec":555.64
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr19.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr19.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"7:54.95",
+"memory":13888284,
+"sys_sec":17.61,
+"usr_sec":455.26
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr20.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr20.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"8:06.23",
+"memory":14029676,
+"sys_sec":17.98,
+"usr_sec":466.07
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr21.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr21.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"5:59.53",
+"memory":13983244,
+"sys_sec":16.73,
+"usr_sec":340.46
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr22.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr22.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"5:37.27",
+"memory":12622808,
+"sys_sec":15.46,
+"usr_sec":319.66
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr2.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr2.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"30:39.79",
+"memory":42427740,
+"sys_sec":90.71,
+"usr_sec":1709.09
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr3.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr3.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"25:00.99",
+"memory":35219060,
+"sys_sec":57.69,
+"usr_sec":1439.45
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr4.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr4.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"25:42.99",
+"memory":33163416,
+"sys_sec":68.87,
+"usr_sec":1434.41
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr5.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr5.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"22:47.02",
+"memory":33059760,
+"sys_sec":49.44,
+"usr_sec":1311.63
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr6.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr6.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"20:30.78",
+"memory":24964660,
+"sys_sec":40.20,
+"usr_sec":1187.50
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr7.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr7.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"20:24.96",
+"memory":27906536,
+"sys_sec":40.44,
+"usr_sec":1180.61
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr8.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr8.30kbp.fa.gz.a8a102b.eb0f3d3.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"19:47.42",
+"memory":22217316,
+"sys_sec":56.83,
+"usr_sec":1048.54
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chr9.30kbp.fa.gz.445f03b.e34d4cd.b691e61.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chr9.30kbp.fa.gz.445f03b.e34d4cd.b691e61.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"30:22.11",
+"memory":56161288,
+"sys_sec":134.66,
+"usr_sec":1529.12
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chrX.30kbp.fa.gz.a8a102b.eb0f3d3.a58faa8.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chrX.30kbp.fa.gz.a8a102b.eb0f3d3.a58faa8.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"25:58.41",
+"memory":34953468,
+"sys_sec":66.18,
+"usr_sec":1450.34
+}
+,
+{
+"file":"1000gont/1000G-ONT.100x2?2B4.chrY.30kbp.fa.gz.a8a102b.eb0f3d3.0713820.smooth.final.gfa",
+"command":"gfalook -i 1000gont/1000G-ONT.100x2%2B4.chrY.30kbp.fa.gz.a8a102b.eb0f3d3.0713820.smooth.final.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"0:55.21",
+"memory":2696740,
+"sys_sec":2.64,
+"usr_sec":52.10
+}
+]}

@@ -1,0 +1,503 @@
+{"flatgfalook": [
+
+{
+"file":"hprc/chr10.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr10.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:05.81",
+"memory":4570172,
+"sys_sec":4.08,
+"usr_sec":180.91
+}
+,
+{
+"file":"hprc/chr11.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr11.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:04.55",
+"memory":4214604,
+"sys_sec":3.68,
+"usr_sec":180.09
+}
+,
+{
+"file":"hprc/chr12.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr12.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:03.39",
+"memory":4260120,
+"sys_sec":3.50,
+"usr_sec":179.08
+}
+,
+{
+"file":"hprc/chr13.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr13.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"2:31.39",
+"memory":5204540,
+"sys_sec":5.39,
+"usr_sec":145.01
+}
+,
+{
+"file":"hprc/chr14.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr14.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"2:20.25",
+"memory":4437892,
+"sys_sec":3.47,
+"usr_sec":135.88
+}
+,
+{
+"file":"hprc/chr15.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr15.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"2:33.37",
+"memory":6953800,
+"sys_sec":4.34,
+"usr_sec":147.83
+}
+,
+{
+"file":"hprc/chr16.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr16.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"2:41.20",
+"memory":9359540,
+"sys_sec":13.56,
+"usr_sec":140.99
+}
+,
+{
+"file":"hprc/chr17.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr17.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"2:00.90",
+"memory":4745064,
+"sys_sec":3.31,
+"usr_sec":116.59
+}
+,
+{
+"file":"hprc/chr18.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr18.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"1:54.51",
+"memory":4531276,
+"sys_sec":3.40,
+"usr_sec":110.17
+}
+,
+{
+"file":"hprc/chr19.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr19.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"1:33.54",
+"memory":3495468,
+"sys_sec":2.38,
+"usr_sec":90.54
+}
+,
+{
+"file":"hprc/chr1.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr1.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"5:48.93",
+"memory":11464784,
+"sys_sec":8.62,
+"usr_sec":338.59
+}
+,
+{
+"file":"hprc/chr20.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr20.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"1:35.88",
+"memory":3708732,
+"sys_sec":2.51,
+"usr_sec":92.60
+}
+,
+{
+"file":"hprc/chr21.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr21.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"1:09.78",
+"memory":3669060,
+"sys_sec":2.76,
+"usr_sec":66.23
+}
+,
+{
+"file":"hprc/chr22.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr22.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"1:14.69",
+"memory":4003912,
+"sys_sec":2.69,
+"usr_sec":71.27
+}
+,
+{
+"file":"hprc/chr2.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr2.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"5:32.93",
+"memory":6551860,
+"sys_sec":5.81,
+"usr_sec":325.95
+}
+,
+{
+"file":"hprc/chr3.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr3.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"5:01.93",
+"memory":6945580,
+"sys_sec":8.08,
+"usr_sec":289.01
+}
+,
+{
+"file":"hprc/chr4.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr4.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"4:26.22",
+"memory":7645504,
+"sys_sec":5.64,
+"usr_sec":259.12
+}
+,
+{
+"file":"hprc/chr5.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr5.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"4:11.65",
+"memory":6516792,
+"sys_sec":4.88,
+"usr_sec":245.69
+}
+,
+{
+"file":"hprc/chr6.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr6.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:58.90",
+"memory":6210604,
+"sys_sec":4.73,
+"usr_sec":232.97
+}
+,
+{
+"file":"hprc/chr7.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr7.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:44.60",
+"memory":6451332,
+"sys_sec":5.52,
+"usr_sec":217.91
+}
+,
+{
+"file":"hprc/chr8.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr8.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:27.34",
+"memory":6382952,
+"sys_sec":4.58,
+"usr_sec":201.30
+}
+,
+{
+"file":"hprc/chr9.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chr9.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"3:15.99",
+"memory":7427408,
+"sys_sec":5.27,
+"usr_sec":189.71
+}
+,
+{
+"file":"hprc/chrM.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chrM.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"0:00.04",
+"memory":12612,
+"sys_sec":0.01,
+"usr_sec":0.02
+}
+,
+{
+"file":"hprc/chrX.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chrX.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"2:51.78",
+"memory":4301884,
+"sys_sec":3.33,
+"usr_sec":167.68
+}
+,
+{
+"file":"hprc/chrY.hprc-v1.0-pggb.gfa",
+"command":"flatgfalook -i hprc/chrY.hprc-v1.0-pggb.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"0:08.34",
+"memory":367704,
+"sys_sec":0.25,
+"usr_sec":8.01
+}
+],
+{"gfalook": [
+{
+"file":"hprc/chr10.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr10.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"4:53.53",
+"memory":5633168,
+"sys_sec":7.12,
+"usr_sec":278.10
+}
+,
+{
+"file":"hprc/chr11.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr11.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"4:34.65",
+"memory":5024200,
+"sys_sec":5.79,
+"usr_sec":266.19
+}
+,
+{
+"file":"hprc/chr12.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr12.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"4:34.82",
+"memory":5242596,
+"sys_sec":6.06,
+"usr_sec":266.35
+}
+,
+{
+"file":"hprc/chr13.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr13.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"4:07.82",
+"memory":6313848,
+"sys_sec":6.36,
+"usr_sec":239.76
+}
+,
+{
+"file":"hprc/chr14.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr14.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"3:54.69",
+"memory":5437252,
+"sys_sec":6.61,
+"usr_sec":227.75
+}
+,
+{
+"file":"hprc/chr15.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr15.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"4:29.11",
+"memory":7970804,
+"sys_sec":11.14,
+"usr_sec":256.91
+}
+,
+{
+"file":"hprc/chr16.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr16.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"5:04.67",
+"memory":12464076,
+"sys_sec":18.77,
+"usr_sec":284.72
+}
+,
+{
+"file":"hprc/chr17.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr17.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"3:27.76",
+"memory":6378752,
+"sys_sec":6.47,
+"usr_sec":200.54
+}
+,
+{
+"file":"hprc/chr18.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr18.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"3:08.94",
+"memory":5878868,
+"sys_sec":5.90,
+"usr_sec":182.39
+}
+,
+{
+"file":"hprc/chr19.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr19.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"2:28.27",
+"memory":4258224,
+"sys_sec":4.28,
+"usr_sec":143.46
+}
+,
+{
+"file":"hprc/chr1.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr1.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"9:40.23",
+"memory":12759472,
+"sys_sec":18.25,
+"usr_sec":560.61
+}
+,
+{
+"file":"hprc/chr20.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr20.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"2:39.74",
+"memory":4731140,
+"sys_sec":4.81,
+"usr_sec":154.37
+}
+,
+{
+"file":"hprc/chr21.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr21.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"2:08.29",
+"memory":4629060,
+"sys_sec":5.05,
+"usr_sec":122.62
+}
+,
+{
+"file":"hprc/chr22.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr22.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"2:20.67",
+"memory":4393844,
+"sys_sec":4.80,
+"usr_sec":135.26
+}
+,
+{
+"file":"hprc/chr2.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr2.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"8:03.78",
+"memory":8028316,
+"sys_sec":8.53,
+"usr_sec":474.19
+}
+,
+{
+"file":"hprc/chr3.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr3.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"7:12.50",
+"memory":9164708,
+"sys_sec":9.67,
+"usr_sec":421.83
+}
+,
+{
+"file":"hprc/chr4.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr4.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"7:15.98",
+"memory":9876160,
+"sys_sec":15.84,
+"usr_sec":419.06
+}
+,
+{
+"file":"hprc/chr5.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr5.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"6:32.34",
+"memory":8190400,
+"sys_sec":8.61,
+"usr_sec":382.81
+}
+,
+{
+"file":"hprc/chr6.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr6.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"6:07.49",
+"memory":7850440,
+"sys_sec":8.03,
+"usr_sec":358.42
+}
+,
+{
+"file":"hprc/chr7.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr7.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"5:55.39",
+"memory":8019852,
+"sys_sec":8.35,
+"usr_sec":345.91
+}
+,
+{
+"file":"hprc/chr8.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr8.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"5:33.98",
+"memory":8180572,
+"sys_sec":8.67,
+"usr_sec":324.39
+}
+,
+{
+"file":"hprc/chr9.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chr9.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"5:38.01",
+"memory":7588576,
+"sys_sec":8.61,
+"usr_sec":328.66
+}
+,
+{
+"file":"hprc/chrM.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chrM.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"0:00.06",
+"memory":13088,
+"sys_sec":0.01,
+"usr_sec":0.03
+}
+,
+{
+"file":"hprc/chrX.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chrX.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"4:23.14",
+"memory":5406636,
+"sys_sec":7.47,
+"usr_sec":252.61
+}
+,
+{
+"file":"hprc/chrY.hprc-v1.0-pggb.gfa",
+"command":"gfalook -i hprc/chrY.hprc-v1.0-pggb.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"0:10.71",
+"memory":322900,
+"sys_sec":0.42,
+"usr_sec":10.21
+}
+]}
