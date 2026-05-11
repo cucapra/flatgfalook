@@ -1,0 +1,44 @@
+{"flatgfalook": [
+
+{
+"file":"small_tests/k.gfa",
+"command":"flatgfalook -i small_tests/k.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"0:00.00",
+"memory":4968,
+"sys_sec":0.00,
+"usr_sec":0.00
+}
+,
+{
+"file":"small_tests/smoke_latency_0_.gfa",
+"command":"flatgfalook -i small_tests/smoke_latency_0_.gfa -o images/test_flat.png -x 1000 -y 500",
+"data":0,
+"wall":"0:00.00",
+"memory":4896,
+"sys_sec":0.00,
+"usr_sec":0.00
+}
+],
+"gfalook": [
+
+{
+"file":"small_tests/k.gfa",
+"command":"gfalook -i small_tests/k.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"0:00.00",
+"memory":5168,
+"sys_sec":0.00,
+"usr_sec":0.00
+}
+,
+{
+"file":"small_tests/smoke_latency_0_.gfa",
+"command":"gfalook -i small_tests/smoke_latency_0_.gfa -o images/test.png -x 1000 -y 500",
+"data":0,
+"wall":"0:00.00",
+"memory":4928,
+"sys_sec":0.00,
+"usr_sec":0.00
+}
+]}

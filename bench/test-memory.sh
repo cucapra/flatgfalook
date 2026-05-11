@@ -3,7 +3,7 @@
 
 delim=""
 
-echo "{flatgfalook: [" >> "$3"
+echo "{\"flatgfalook\": [" >> "$3"
 for file in $1/*.gfa; do
 	echo $delim >> "$3"
 	/usr/bin/time --format "{\n\"file\":\"$file\",\n\"command\":\"%C\",\n\"data\":%D,\n\"wall\":\"%E\",\n\"memory\":%M,\n\"sys_sec\":%S,\n\"usr_sec\":%U\n}" -a -o "$3" flatgfalook -i "$file" -o "$2"/test_flat.png -x 1000 -y 500
@@ -11,9 +11,9 @@ for file in $1/*.gfa; do
 done
 echo "]," >> "$3"
 
-delim= ""
+delim=""
 
-echo "{gfalook:" >> "$3"
+echo "\"gfalook\": [" >> "$3"
 for file in $1/*.gfa; do
 	echo $delim >> "$3"
 	/usr/bin/time --format "{\n\"file\":\"$file\",\n\"command\":\"%C\",\n\"data\":%D,\n\"wall\":\"%E\",\n\"memory\":%M,\n\"sys_sec\":%S,\n\"usr_sec\":%U\n}" -a -o "$3" gfalook -i "$file" -o "$2"/test.png -x 1000 -y 500
